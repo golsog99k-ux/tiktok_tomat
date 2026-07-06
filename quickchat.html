@@ -3,344 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ QuickChat</title>
+    <title>⚡ QuickChat Pro</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#1a1a2e;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center}
-        .phone{width:100%;max-width:400px;height:100vh;background:#0a0a1a;display:flex;flex-direction:column;position:relative}
-        .header{background:#16213e;padding:10px;color:white;display:flex;align-items:center;gap:10px;border-bottom:2px solid #ff4444;flex-shrink:0}
-        .header .menu-btn{background:none;border:none;color:white;font-size:20px;cursor:pointer}
-        .header .title{font-weight:bold;font-size:16px;flex:1}
-        .header .title span{color:#ff4444}
-        .search-bar{padding:8px;background:#16213e;display:flex;gap:5px}
-        .search-bar input{flex:1;padding:8px;border-radius:15px;border:none;background:#0a0a1a;color:white;font-size:12px;outline:none}
+        .phone{width:100%;max-width:400px;height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative}
+        :root{--bg:#0a0a1a;--header:#16213e;--msg-rec:#16213e;--input-bg:#0a0a1a;--text:white;--sub:#888}
+        .light{--bg:#f0f0f0;--header:#ddd;--msg-rec:#e0e0e0;--input-bg:#fff;--text:#000;--sub:#666}
+        .header{background:var(--header);padding:10px;color:var(--text);display:flex;align-items:center;gap:10px;border-bottom:2px solid #ff4444;flex-shrink:0}
+        .header .back-btn{background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;display:none}
+        .header .title{font-weight:bold;font-size:16px;flex:1}.header .title span{color:#ff4444}
+        .header .theme-btn{background:none;border:none;color:var(--text);font-size:16px;cursor:pointer}
+        .contacts-list{flex:1;overflow-y:auto;padding:8px}
+        .contact-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer;color:var(--text);border-bottom:1px solid #222}
+        .contact-item:hover{background:var(--header)}
+        .contact-item .ava{width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;position:relative}
+        .contact-item .ava .online-dot{width:12px;height:12px;border-radius:50%;background:#00ff00;position:absolute;bottom:0;right:0;border:2px solid var(--bg)}
+        .contact-item .info{flex:1}.contact-item .name{font-weight:bold;font-size:14px}.contact-item .status{font-size:11px;color:var(--sub)}
         .messages{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-        .msg{max-width:80%;padding:8px 12px;border-radius:12px;color:white;font-size:13px;word-break:break-word;position:relative}
-        .msg.sent{background:#ff4444;align-self:flex-end}
-        .msg.received{background:#16213e;align-self:flex-start}
-        .msg .sender{font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:2px;display:flex;align-items:center;gap:5px}
-        .msg .sender .ava{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+        .msg{max-width:80%;padding:8px 12px;border-radius:12px;color:var(--text);font-size:13px;word-break:break-word;position:relative}
+        .msg.sent{background:#ff4444;align-self:flex-end;color:white}
+        .msg.received{background:var(--msg-rec);align-self:flex-start}
+        .msg .sender{font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:2px}
         .msg .time{font-size:9px;color:rgba(255,255,255,0.4);text-align:right;margin-top:3px}
-        .msg .sticker{font-size:40px}
-        .empty-state{text-align:center;color:#666;padding:30px;flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column}
+        .msg .sticker{font-size:40px}.msg .pinned{background:#ffaa00;color:#000;font-size:10px;padding:2px 6px;border-radius:5px;display:inline-block;margin-bottom:3px}
+        .msg .edit-btn{position:absolute;top:3px;right:3px;background:rgba(0,0,0,0.5);border:none;color:white;font-size:10px;cursor:pointer;border-radius:3px;display:none;padding:2px 5px}
+        .msg:hover .edit-btn{display:block}
+        .empty-state{text-align:center;color:var(--sub);padding:30px;flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column}
         .empty-state .icon{font-size:50px;margin-bottom:10px}
-        .input-area{display:flex;padding:8px;gap:5px;background:#16213e;flex-shrink:0;align-items:center}
-        .input-area input{flex:1;padding:10px;border-radius:20px;border:none;background:#0a0a1a;color:white;font-size:13px;outline:none}
-        .input-area .left-btns{display:flex;gap:3px}
+        .input-area{display:flex;padding:8px;gap:5px;background:var(--header);flex-shrink:0;align-items:center}
+        .input-area input{flex:1;padding:10px;border-radius:20px;border:none;background:var(--input-bg);color:var(--text);font-size:13px;outline:none}
         .input-area button{width:35px;height:35px;border-radius:50%;border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
-        .input-area .send-btn{background:#ff4444}
-        .input-area .sticker-btn{background:#ff8800}
-        .input-area .video-btn{background:#0088ff}
-        .input-area .me-btn{background:#ff4444;width:auto;padding:0 12px;border-radius:20px;font-size:12px;font-weight:bold;margin-left:auto}
+        .input-area .send-btn{background:#ff4444}.input-area .sticker-btn{background:#ff8800}.input-area .video-btn{background:#0088ff}.input-area .file-btn{background:#44aa44}
         .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column}
         .login-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
-        .login-box h2{color:#ff4444;margin-bottom:8px}
-        .login-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
+        .login-box h2{color:#ff4444;margin-bottom:8px}.login-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
         .login-box button{width:100%;padding:10px;background:#ff4444;color:white;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px}
         .login-box .guest-btn{background:#333;margin-top:5px}
-        .admin-panel{display:none;padding:10px;background:#0a0a1a;border-top:1px solid #ff4444;flex-shrink:0;max-height:200px;overflow-y:auto}
+        .admin-panel{display:none;padding:10px;background:var(--header);border-top:1px solid #ff4444;flex-shrink:0;max-height:200px;overflow-y:auto}
         .admin-panel h3{color:#ff4444;font-size:13px;margin-bottom:8px}
-        .admin-panel input{width:100%;padding:7px;margin:3px 0;border-radius:5px;border:1px solid #333;background:#16213e;color:white;font-size:11px}
+        .admin-panel input{width:100%;padding:7px;margin:3px 0;border-radius:5px;border:1px solid #333;background:var(--input-bg);color:var(--text);font-size:11px}
         .admin-panel button{padding:6px 10px;background:#ff4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:10px;margin:2px}
-        .admin-panel .ban-btn{background:#ff0000}
-        .admin-panel .verify-btn{background:#1da1f2}
-        .settings-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:90;display:none;flex-direction:column;padding:20px}
-        .settings-overlay.show{display:flex}
-        .settings-overlay h2{color:#ff4444;margin-bottom:15px}
-        .settings-overlay button{padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;margin:5px 0;cursor:pointer;font-weight:bold}
-        .settings-overlay .close-settings{background:#333}
-        .verified-badge{display:inline-block;width:14px;height:14px;background:#1da1f2;border-radius:50%;text-align:center;line-height:14px;font-size:9px;color:white;margin-left:3px}
-        .user-status{color:white;font-size:11px;padding:5px 10px;background:rgba(255,68,68,0.2);text-align:center}
-        .name-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:95;display:none;align-items:center;justify-content:center}
-        .name-overlay.show{display:flex}
-        .name-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
-        .name-box h2{color:#ff4444;margin-bottom:10px}
-        .name-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
-        .name-box button{width:100%;padding:10px;background:#ff4444;color:white;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px}
+        .admin-panel .ban-btn{background:#ff0000}.admin-panel .verify-btn{background:#1da1f2}.admin-panel .mute-btn{background:#ff8800}
+        .profile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:95;display:none;flex-direction:column;align-items:center;padding:30px}
+        .profile-overlay.show{display:flex}.profile-overlay .ava-big{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:50px;margin:20px 0}
+        .profile-overlay .name-big{color:white;font-size:20px;font-weight:bold}.profile-overlay .status-text{color:#888;font-size:13px;margin:5px 0}
+        .profile-overlay button{padding:10px 30px;background:#ff4444;color:white;border:none;border-radius:20px;margin:8px;cursor:pointer;font-weight:bold}
+        .profile-overlay .close-btn{background:#333}
+        .user-status{color:var(--text);font-size:11px;padding:5px 10px;background:rgba(255,68,68,0.2);text-align:center}
+        .new-chat-btn{position:absolute;bottom:15px;right:15px;width:50px;height:50px;border-radius:50%;background:#ff4444;color:white;font-size:24px;border:none;cursor:pointer;z-index:10;box-shadow:0 4px 15px rgba(255,68,68,0.5);display:flex;align-items:center;justify-content:center}
+        .online-list{position:absolute;top:40px;right:10px;background:var(--header);border-radius:10px;padding:10px;z-index:15;display:none;max-height:200px;overflow-y:auto;min-width:150px;box-shadow:0 4px 15px rgba(0,0,0,0.5)}
+        .online-list.show{display:block}.online-list .online-item{color:var(--text);padding:5px;font-size:12px;display:flex;align-items:center;gap:5px}
+        .online-list .online-item .dot{width:8px;height:8px;border-radius:50%;background:#00ff00}
     </style>
 </head>
 <body>
-
 <div class="phone" id="app">
     <div class="header">
-        <button class="menu-btn" onclick="openSettings()">⋮</button>
-        <div class="title">⚡ <span>QuickChat</span></div>
+        <button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+        <div class="title">⚡ <span id="headerTitle">QuickChat</span></div>
+        <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+        <button class="theme-btn" onclick="toggleOnlineList()">🟢</button>
     </div>
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="🔍 Поиск по нику..." oninput="filterMessages()">
-    </div>
+    <div class="online-list" id="onlineList"></div>
     <div class="user-status" id="userStatus">Вы не вошли</div>
-    <div class="messages" id="messagesContainer">
-        <div class="empty-state">
-            <div class="icon">💬</div>
-            <p>Пусто</p>
-            <p style="font-size:11px">Нет сообщений или каналов</p>
-        </div>
-    </div>
-    <div class="input-area" id="inputArea">
-        <div class="left-btns">
-            <button class="sticker-btn" onclick="sendSticker()">😀</button>
-            <button class="video-btn" onclick="sendVideo()">📹</button>
-        </div>
-        <input type="text" id="messageInput" placeholder="Сообщение...">
+    <div class="contacts-list" id="contactsList"></div>
+    <div class="messages" id="messagesContainer" style="display:none"></div>
+    <div class="input-area" id="inputArea" style="display:none">
+        <button class="sticker-btn" onclick="sendSticker()">😀</button>
+        <button class="video-btn" onclick="sendVideo()">📹</button>
+        <button class="file-btn" onclick="sendFile()">📎</button>
+        <input type="text" id="messageInput" placeholder="Сообщение..." oninput="typing()">
         <button class="send-btn" onclick="sendMessage()">➤</button>
-        <button class="me-btn" onclick="showMyProfile()">Я</button>
     </div>
+    <button class="new-chat-btn" id="newChatBtn" onclick="showNewChat()" style="display:none">+</button>
     <div class="admin-panel" id="adminPanel">
         <h3>👑 Админ-панель</h3>
-        <input type="text" id="newUserNick" placeholder="Никнейм">
-        <input type="text" id="newUserCode" placeholder="Код" readonly>
+        <input type="text" id="newUserNick" placeholder="Никнейм"><input type="text" id="newUserCode" placeholder="Код" readonly>
         <button onclick="generateCode()">🎫 Создать код</button>
-        <input type="text" id="banUserNick" placeholder="Ник для бана">
-        <button class="ban-btn" onclick="banUser()">🚫 Забанить</button>
-        <input type="text" id="verifyUserNick" placeholder="Ник для галочки">
-        <button class="verify-btn" onclick="verifyUser()">✓ Дать галочку</button>
+        <input type="text" id="banUserNick" placeholder="Ник для бана"><button class="ban-btn" onclick="banUser()">🚫 Бан</button>
+        <input type="text" id="verifyUserNick" placeholder="Ник для галочки"><button class="verify-btn" onclick="verifyUser()">✓ Галочка</button>
+        <input type="text" id="muteUserNick" placeholder="Ник для мута"><button class="mute-btn" onclick="muteUser()">🔇 Мут</button>
         <button onclick="logout()">🚪 Выйти</button>
     </div>
 </div>
-
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box" id="loginBox">
-        <h2>⚡ QuickChat</h2>
-        <p style="color:#ccc;font-size:12px">Введи код или войди как гость</p>
-        <input type="text" id="codeInput" placeholder="Код">
-        <button onclick="login()">✅ Войти</button>
-        <button class="guest-btn" onclick="guestLogin()">👻 Войти как гость</button>
-        <div class="error" id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>
+        <h2>⚡ QuickChat Pro</h2><p style="color:#ccc;font-size:12px">Введи код или войди как гость</p>
+        <input type="text" id="codeInput" placeholder="Код"><button onclick="login()">✅ Войти</button>
+        <button class="guest-btn" onclick="guestLogin()">👻 Гость</button>
+        <div id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>
     </div>
 </div>
-
-<div class="name-overlay" id="nameOverlay">
-    <div class="name-box">
-        <h2>👤 Ваше имя</h2>
-        <p style="color:#ccc;font-size:12px">Придумайте себе имя</p>
-        <input type="text" id="nameInput" placeholder="Ваше имя">
-        <button onclick="setName()">✅ Сохранить</button>
-    </div>
+<div class="profile-overlay" id="profileOverlay">
+    <div class="ava-big" id="profileAva">👤</div><div class="name-big" id="profileName">Пользователь</div><div class="status-text" id="profileStatus">В сети</div>
+    <button onclick="startChatFromProfile()">💬 Написать</button>
+    <button id="muteBtn" onclick="muteFromProfile()" style="background:#ff8800;">🔇 Мут</button>
+    <button class="close-btn" onclick="closeProfile()">✕ Закрыть</button>
 </div>
-
-<div class="settings-overlay" id="settingsOverlay">
-    <h2>⚙️ <span id="settingsTitle">Настройки</span></h2>
-    <div id="settingsContent"></div>
-    <button class="close-settings" onclick="closeSettings()">✕ Закрыть</button>
-</div>
-
 <script>
-const firebaseConfig = {
-    databaseURL: "https://quickchat-c8bc2-default-rtdb.firebaseio.com/"
-};
+const firebaseConfig = {databaseURL:"https://quickchat-c8bc2-default-rtdb.firebaseio.com/"};
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+let currentUser=null,currentToken=null,isAdmin=false,currentChat=null,selectedProfile=null;
+const ADMIN_KEY="danil_admin_2025";
+let adminList={},allUsers={},onlineUsers={},mutedUsers={};
+let notifySound=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
 
-let currentUser = null;
-let currentToken = null;
-let isAdmin = false;
-const ADMIN_KEY = "danil_admin_2025";
-let adminList = {};
-db.ref('admins').on('value', snap => { adminList = snap.val() || {}; });
+db.ref('admins').on('value',snap=>{adminList=snap.val()||{};});
+db.ref('codes').on('value',snap=>{allUsers=snap.val()||{};});
+db.ref('online').on('value',snap=>{onlineUsers=snap.val()||{};updateOnlineList();});
 
-function login(){
-    let code = document.getElementById('codeInput').value.trim();
-    if(code === ADMIN_KEY){
-        currentUser = 'admin';
-        currentToken = ADMIN_KEY;
-        isAdmin = true;
-        db.ref('admins/' + ADMIN_KEY).set(true);
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
-        document.getElementById('userStatus').textContent = '👑 Админ';
-        document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.4)';
-        loadMessages();
-        return;
-    }
-    db.ref('codes/' + code).once('value').then(snap => {
-        let data = snap.val();
-        if(data && data.banned){
-            document.getElementById('loginBox').innerHTML = '<h2 style="color:#ff0000;">🚫 ВЫ ЗАБАНЕНЫ!</h2><p style="color:#ccc;">Доступ запрещён</p>';
-            return;
-        }
-        if(data && !data.banned){
-            currentUser = data.nick || data;
-            currentToken = code;
-            isAdmin = !!adminList[code];
-            document.getElementById('loginOverlay').style.display = 'none';
-            if(isAdmin) document.getElementById('adminPanel').style.display = 'block';
-            if(!data.nick){
-                document.getElementById('nameOverlay').classList.add('show');
-            }else{
-                document.getElementById('userStatus').textContent = '👤 ' + data.nick + (data.verified ? ' ✓' : '');
-                document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
-                loadMessages();
-            }
-        }else{
-            document.getElementById('loginError').style.display = 'block';
-            setTimeout(() => document.getElementById('loginError').style.display = 'none', 2000);
-        }
-    });
+function notify(){try{notifySound.play();}catch(e){}}
+function toggleTheme(){document.getElementById('app').classList.toggle('light');localStorage.setItem('theme',document.getElementById('app').classList.contains('light')?'light':'dark');}
+if(localStorage.getItem('theme')==='light')document.getElementById('app').classList.add('light');
+
+function updateOnlineList(){
+    let list=document.getElementById('onlineList');list.innerHTML='';
+    for(let[nick,data]of Object.entries(onlineUsers)){if(nick===currentUser)continue;
+        let div=document.createElement('div');div.className='online-item';
+        div.innerHTML='<span class="dot"></span>'+nick;list.appendChild(div);}
 }
-
-function setName(){
-    let name = document.getElementById('nameInput').value.trim();
-    if(!name) return alert('Введи имя!');
-    db.ref('codes/' + currentToken + '/nick').set(name);
-    currentUser = name;
-    document.getElementById('nameOverlay').classList.remove('show');
-    document.getElementById('userStatus').textContent = '👤 ' + name;
-    document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
-    loadMessages();
+function toggleOnlineList(){document.getElementById('onlineList').classList.toggle('show');}
+function setOnline(){if(!currentUser||currentUser==='admin'||currentUser.startsWith('guest'))return;
+    db.ref('online/'+currentUser).set({time:Date.now()});db.ref('online/'+currentUser).onDisconnect().remove();}
+    function login(){
+    let code=document.getElementById('codeInput').value.trim();
+    if(code===ADMIN_KEY){
+        currentUser='admin';currentToken=ADMIN_KEY;isAdmin=true;
+        db.ref('admins/'+ADMIN_KEY).set(true);
+        document.getElementById('loginOverlay').style.display='none';
+        document.getElementById('adminPanel').style.display='block';
+        document.getElementById('userStatus').textContent='👑 Админ';
+        document.getElementById('userStatus').style.background='rgba(255,68,68,0.4)';
+        showContacts();return;
+    }
+    db.ref('codes/'+code).once('value').then(snap=>{
+        let data=snap.val();
+        if(data&&data.banned){
+            document.getElementById('loginBox').innerHTML='<h2 style="color:#ff0000;">🚫 ВЫ ЗАБАНЕНЫ!</h2><p style="color:#ccc;">Доступ запрещён</p>';return;
+        }
+        if(data&&!data.banned){
+            currentUser=data.nick||data;currentToken=code;isAdmin=!!adminList[code];
+            document.getElementById('loginOverlay').style.display='none';
+            if(isAdmin)document.getElementById('adminPanel').style.display='block';
+            document.getElementById('userStatus').textContent='👤 '+(data.nick||'Пользователь');
+            document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';
+            showContacts();setOnline();
+        }else{document.getElementById('loginError').style.display='block';setTimeout(()=>document.getElementById('loginError').style.display='none',2000);}
+    });
 }
 
 function guestLogin(){
-    currentUser = 'guest_' + Math.floor(Math.random() * 9999);
-    currentToken = null;
-    isAdmin = false;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('userStatus').textContent = '👻 Гость: ' + currentUser;
-    document.getElementById('userStatus').style.background = 'rgba(100,100,100,0.3)';
-    document.getElementById('inputArea').style.display = 'none';
-    loadMessages();
+    currentUser='guest_'+Math.floor(Math.random()*9999);currentToken=null;isAdmin=false;
+    document.getElementById('loginOverlay').style.display='none';
+    document.getElementById('userStatus').textContent='👻 Гость';
+    document.getElementById('userStatus').style.background='rgba(100,100,100,0.3)';
+    showContacts();
 }
 
-function generateCode(){
-    if(!isAdmin && currentUser !== 'admin') return;
-    let nick = document.getElementById('newUserNick').value.trim();
-    if(!nick) return alert('Введи ник!');
-    let code = Math.floor(1000 + Math.random() * 9000).toString();
-    db.ref('codes/' + code).set({nick: nick, verified: false, banned: false});
-    document.getElementById('newUserCode').value = code;
-}
-
-function banUser(){
-    if(!isAdmin && currentUser !== 'admin') return;
-    let nick = document.getElementById('banUserNick').value.trim();
-    if(!nick) return alert('Введи ник!');
-    db.ref('codes').once('value').then(snap => {
-        let codes = snap.val() || {};
-        for(let [key, val] of Object.entries(codes)){
-            if((val.nick || val) === nick){
-                db.ref('codes/' + key + '/banned').set(true);
-                alert('🚫 @' + nick + ' забанен!');
-                return;
-            }
-        }
-    });
-}
-
-function verifyUser(){
-    if(!isAdmin && currentUser !== 'admin') return;
-    let nick = document.getElementById('verifyUserNick').value.trim();
-    if(!nick) return alert('Введи ник!');
-    db.ref('codes').once('value').then(snap => {
-        let codes = snap.val() || {};
-        for(let [key, val] of Object.entries(codes)){
-            if((val.nick || val) === nick){
-                db.ref('codes/' + key + '/verified').set(true);
-                alert('✓ @' + nick + ' верифицирован!');
-                return;
-            }
-        }
-    });
-}
-
-function sendMessage(){
-    let text = document.getElementById('messageInput').value.trim();
-    if(!text || !currentUser) return;
-    db.ref('messages').push({
-        type: 'text', text: text,
-        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
-        time: new Date().toLocaleTimeString(), timestamp: Date.now()
-    });
-    document.getElementById('messageInput').value = '';
-}
-
-function sendSticker(){
-    if(!currentUser) return;
-    let stickers = ['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡'];
-    let s = stickers[Math.floor(Math.random()*stickers.length)];
-    db.ref('messages').push({
-        type: 'sticker', text: s,
-        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
-        time: new Date().toLocaleTimeString(), timestamp: Date.now()
-    });
-}
-
-function sendVideo(){
-    if(!currentUser) return;
-    let url = prompt('Ссылка на видео:');
-    if(!url) return;
-    if(url.includes('youtube.com/watch?v=')) url = 'https://www.youtube.com/embed/'+url.split('v=')[1].split('&')[0];
-    if(url.includes('youtu.be/')) url = 'https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
-    db.ref('messages').push({
-        type: 'video', text: url,
-        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
-        time: new Date().toLocaleTimeString(), timestamp: Date.now()
-    });
-}
-
-function loadMessages(){
-    db.ref('messages').on('value', snap => {
-        let c = document.getElementById('messagesContainer');
-        let msgs = snap.val() || {};
-        let arr = Object.values(msgs).sort((a,b) => a.timestamp - b.timestamp);
-        
-        if(arr.length === 0){
-            c.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>Пусто</p><p style="font-size:11px">Нет сообщений</p></div>';
-        }else{
-            c.innerHTML = '';
-            arr.forEach(m => {
-                let isMine = m.sender === currentUser || (m.sender === '👑 Админ' && currentUser === 'admin');
-                let d = document.createElement('div');
-                d.className = 'msg ' + (isMine ? 'sent' : 'received');
-                let content = '';
-                if(!isMine) content += '<div class="sender">' + m.sender + '</div>';
-                if(m.type === 'sticker') content += '<div class="sticker">'+m.text+'</div>';
-                else if(m.type === 'video') content += '<iframe width="100%" height="150" src="'+m.text+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';
-                else content += m.text;
-                content += '<div class="time">'+m.time+'</div>';
-                d.innerHTML = content;
-                c.appendChild(d);
-            });
-        }
-        c.scrollTop = c.scrollHeight;
-    });
-}
-
-function filterMessages(){
-    let q = document.getElementById('searchInput').value.toLowerCase().trim();
-    document.querySelectorAll('.msg').forEach(m => {
-        m.style.display = (!q || m.textContent.toLowerCase().includes(q)) ? 'block' : 'none';
-    });
-}
-
-function showMyProfile(){
-    if(!currentUser) return;
-    alert('👤 ' + currentUser + (isAdmin ? ' (Админ)' : ''));
-}
-
-function openSettings(){
-    let content = document.getElementById('settingsContent');
-    if(isAdmin || currentUser === 'admin'){
-        content.innerHTML = '<button onclick="document.getElementById(\'adminPanel\').style.display=\'block\'">👑 Админ-панель</button>';
-    }else{
-        content.innerHTML = '<p style="color:white;">👤 ' + (currentUser || 'Гость') + '</p>';
+function showContacts(){
+    document.getElementById('contactsList').style.display='block';document.getElementById('messagesContainer').style.display='none';
+    document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='block';
+    document.getElementById('headerTitle').textContent='QuickChat';document.getElementById('backBtn').style.display='none';
+    let list=document.getElementById('contactsList');list.innerHTML='';let users=allUsers||{};let hasUsers=false;
+    for(let[code,data]of Object.entries(users)){
+        if(code===ADMIN_KEY)continue;let nick=data.nick||data;if(typeof nick!=='string')continue;if(nick===currentUser)continue;hasUsers=true;
+        let div=document.createElement('div');div.className='contact-item';div.onclick=function(){openChat(nick);};
+        div.innerHTML='<div class="ava" style="background:'+getColor(nick)+';">'+getEmoji(nick)+'<div class="online-dot" style="display:'+(onlineUsers[nick]?'block':'none')+'"></div></div><div class="info"><div class="name">'+nick+' '+(data.verified?'✓':'')+' '+(data.banned?'🚫':'')+'</div><div class="status">'+(onlineUsers[nick]?'В сети':'Был(а) недавно')+'</div></div>';
+        list.appendChild(div);
     }
-    document.getElementById('settingsOverlay').classList.add('show');
+    if(!hasUsers)list.innerHTML='<div class="empty-state"><div class="icon">👥</div><p>Нет контактов</p><p style="font-size:11px">Админ может создать коды</p></div>';
 }
 
-function closeSettings(){
-    document.getElementById('settingsOverlay').classList.remove('show');
+function openChat(nick){
+    currentChat=nick;document.getElementById('contactsList').style.display='none';
+    document.getElementById('messagesContainer').style.display='flex';document.getElementById('inputArea').style.display='flex';
+    document.getElementById('newChatBtn').style.display='none';document.getElementById('headerTitle').textContent='@'+nick;
+    document.getElementById('backBtn').style.display='block';loadMessages();
+}
+
+function goBack(){currentChat=null;showContacts();}
+function showNewChat(){let nick=prompt('Введи ник собеседника:');if(!nick)return;openChat(nick);}
+    function startChatFromProfile(){if(selectedProfile){openChat(selectedProfile);closeProfile();}}
+function showProfile(nick){selectedProfile=nick;document.getElementById('profileAva').textContent=getEmoji(nick);document.getElementById('profileAva').style.background=getColor(nick);document.getElementById('profileName').textContent=nick;document.getElementById('profileStatus').textContent=onlineUsers[nick]?'В сети':'Был(а) недавно';document.getElementById('profileOverlay').classList.add('show');}
+function closeProfile(){document.getElementById('profileOverlay').classList.remove('show');selectedProfile=null;}
+
+function generateCode(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('newUserNick').value.trim();if(!nick)return alert('Введи ник!');let code=Math.floor(1000+Math.random()*9000).toString();db.ref('codes/'+code).set({nick:nick,verified:false,banned:false,muted:false});document.getElementById('newUserCode').value=code;}
+function banUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('banUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/banned').set(true);alert('🚫 @'+nick+' забанен!');return;}}}
+function verifyUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('verifyUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/verified').set(true);alert('✓ @'+nick+' верифицирован!');return;}}}
+function muteUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('muteUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/muted').set(true);alert('🔇 @'+nick+' замучен!');return;}}}
+function muteFromProfile(){if(!isAdmin||!selectedProfile)return;for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===selectedProfile){db.ref('codes/'+key+'/muted').set(true);alert('🔇 @'+selectedProfile+' замучен!');closeProfile();return;}}}
+
+function sendMessage(){let text=document.getElementById('messageInput').value.trim();if(!text||!currentUser||!currentChat)return;if(mutedUsers[currentUser]){alert('🔇 Вы замучены!');return;}let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'text',text:text,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});document.getElementById('messageInput').value='';notify();}
+function sendSticker(){if(!currentUser||!currentChat)return;let stickers=['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡'];let s=stickers[Math.floor(Math.random()*stickers.length)];let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'sticker',text:s,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
+function sendVideo(){if(!currentUser||!currentChat)return;let url=prompt('Ссылка на видео (YouTube/mp4):');if(!url)return;if(url.includes('youtube.com/watch?v='))url='https://www.youtube.com/embed/'+url.split('v=')[1].split('&')[0];if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'video',text:url,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
+function sendFile(){if(!currentUser||!currentChat)return;let url=prompt('Ссылка на файл:');if(!url)return;let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'file',text:url,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
+function typing(){if(!currentUser||!currentChat)return;let chatId=[currentUser,currentChat].sort().join('_');db.ref('typing/'+chatId+'/'+currentUser).set(Date.now());setTimeout(()=>db.ref('typing/'+chatId+'/'+currentUser).remove(),3000);}
+    function loadMessages(){
+    if(!currentChat)return;
+    let chatId=[currentUser,currentChat].sort().join('_');
+    db.ref('typing/'+chatId).on('value',snap=>{
+        let typing=snap.val()||{};let status=document.getElementById('headerTitle');
+        let typingUsers=Object.keys(typing).filter(k=>k!==currentUser&&Date.now()-typing[k]<3000);
+        if(typingUsers.length>0)status.textContent='@'+currentChat+' ✍️';else status.textContent='@'+currentChat;
+    });
+    db.ref('chats/'+chatId).on('value',snap=>{
+        let c=document.getElementById('messagesContainer');let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);
+        if(arr.length===0){c.innerHTML='<div class="empty-state"><div class="icon">💬</div><p>Нет сообщений</p><p style="font-size:11px">Напишите первое сообщение!</p></div>';}
+        else{c.innerHTML='';arr.forEach((m,index)=>{let isMine=m.sender===currentUser||(m.sender==='👑 Админ'&&currentUser==='admin');let d=document.createElement('div');d.className='msg '+(isMine?'sent':'received');let content='';if(!isMine)content+='<div class="sender">'+m.sender+'</div>';if(m.pinned)content+='<div class="pinned">📌 Закреплено</div>';if(m.type==='sticker')content+='<div class="sticker">'+m.text+'</div>';else if(m.type==='video')content+='<iframe width="100%" height="150" src="'+m.text+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';else if(m.type==='file')content+='<a href="'+m.text+'" target="_blank" style="color:#44aa44;">📎 Скачать файл</a>';else content+=m.text;content+='<div class="time">'+m.time+'</div>';if(isMine&&m.type==='text'){content+='<button class="edit-btn" onclick="editMessage(\''+chatId+'\',\''+index+'\',\''+m.text.replace(/'/g,"\\'")+'\')">✏️</button>';}if(isAdmin||currentUser==='admin'){content+='<button class="edit-btn" style="right:30px;" onclick="pinMessage(\''+chatId+'\',\''+index+'\')">📌</button>';}d.innerHTML=content;d.setAttribute('data-index',index);d.setAttribute('data-chat',chatId);c.appendChild(d);});}c.scrollTop=c.scrollHeight;
+    });
+}
+
+function editMessage(chatId,index,oldText){
+    let newText=prompt('Редактировать сообщение:',oldText);
+    if(newText&&newText!==oldText){db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/text').set(newText);db.ref('chats/'+chatId+'/'+keys[index]+'/edited').set(true);}});}
+}
+
+function pinMessage(chatId,index){
+    db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/pinned').set(true);alert('📌 Сообщение закреплено!');}});
+}
+
+function searchMessages(){
+    let query=document.getElementById('searchInput').value.toLowerCase().trim();
+    let msgs=document.querySelectorAll('.msg');msgs.forEach(m=>{if(!query||m.textContent.toLowerCase().includes(query)){m.style.display='block';}else{m.style.display='none';}});
 }
 
 function logout(){
-    currentUser = null; currentToken = null; isAdmin = false;
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('userStatus').textContent = 'Вы не вошли';
-    document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
-    document.getElementById('loginBox').innerHTML = '<h2>⚡ QuickChat</h2><p style="color:#ccc;font-size:12px">Введи код или войди как гость</p><input type="text" id="codeInput" placeholder="Код"><button onclick="login()">✅ Войти</button><button class="guest-btn" onclick="guestLogin()">👻 Войти как гость</button><div class="error" id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>';
+    if(currentUser&&currentUser!=='admin'&&!currentUser.startsWith('guest')){db.ref('online/'+currentUser).remove();}
+    currentUser=null;currentToken=null;isAdmin=false;currentChat=null;
+    document.getElementById('loginOverlay').style.display='flex';document.getElementById('adminPanel').style.display='none';
+    document.getElementById('contactsList').style.display='none';document.getElementById('messagesContainer').style.display='none';
+    document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='none';
+    document.getElementById('userStatus').textContent='Вы не вошли';document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';
 }
+
+function getColor(nick){let colors=['#ff4444','#ff8800','#ffaa00','#44aa44','#4488ff','#aa44ff','#ff44aa'];let hash=0;for(let i=0;i<nick.length;i++)hash=nick.charCodeAt(i)+((hash<<5)-hash);return colors[Math.abs(hash)%colors.length];}
+function getEmoji(nick){let emojis=['👤','👑','🐱','🤖','🔥','💀','🍅','⚡','🎯','🌟','💎','🎭','🐉','🦊','🐼'];let hash=0;for(let i=0;i<nick.length;i++)hash=nick.charCodeAt(i)+((hash<<5)-hash);return emojis[Math.abs(hash)%emojis.length];}
+
+showContacts();
 </script>
 </body>
 </html>
