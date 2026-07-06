@@ -9,70 +9,178 @@
         body{background:#000;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center}
         .phone{width:100%;max-width:400px;height:100vh;background:#000;position:relative;overflow:hidden}
         .video-container{width:100%;height:calc(100% - 60px);overflow-y:scroll;padding-top:10px}
-        .video-slide{width:100%;min-height:calc(100vh - 70px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;border-bottom:1px solid #222;padding:15px}
+        .video-slide{width:100%;min-height:calc(100vh - 70px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;border-bottom:1px solid #222;padding:15px;color:white}
         h2{color:#ff4444;margin:15px 0}
         .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:400px;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;align-items:center;padding:8px 0;height:55px}
         .plus-btn{width:45px;height:45px;background:#ff4444;border-radius:50%;font-size:28px;color:white;border:none;cursor:pointer}
         .upload-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:50;display:none;align-items:center;justify-content:center}
         .upload-overlay.show{display:flex}
         .upload-box{background:#1a1a1a;padding:20px;border-radius:20px;border:2px solid #ff4444;width:90%;max-width:350px}
-        .upload-box h3{color:#ff4444;text-align:center}
-        .upload-box input[type="file"]{width:100%;padding:12px;margin:10px 0;background:#0a0a0a;color:white;border-radius:10px;border:1px dashed #ff4444}
-        .upload-box input[type="text"],.upload-box textarea{width:100%;padding:10px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#0a0a0a;color:white}
-        .upload-box button{width:100%;padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px}
+        .upload-box h3{color:#ff4444;text-align:center;margin-bottom:15px}
+        .upload-box input[type="file"],.upload-box input[type="text"],.upload-box textarea{width:100%;padding:10px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#0a0a0a;color:white}
+        .upload-box input[type="file"]{border:1px dashed #ff4444;padding:15px}
+        .upload-box button{width:100%;padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px;font-size:14px}
         .upload-box .close-btn{background:#333}
+        .upload-box .tabs{display:flex;gap:5px;margin-bottom:10px}
+        .upload-box .tab{flex:1;padding:8px;text-align:center;background:#333;color:white;border-radius:10px;cursor:pointer;font-size:12px;border:none}
+        .upload-box .tab.active{background:#ff4444}
         video{width:100%;max-height:60vh;border-radius:10px;background:#000}
-        .video-info{color:white;padding:10px;text-align:left;width:100%}
+        .video-info{padding:10px;text-align:left;width:100%}
+        .video-info b{color:#ff4444}
         .emoji-big{font-size:80px}
     </style>
 </head>
 <body>
 <div class="phone">
-    <div class="video-container" id="videoContainer">
-        <div class="video-slide">
-            <span class="emoji-big">🍅</span>
-            <h2>TikTok Tomat</h2>
-            <p style="color:#ccc;">Загрузи видео через +</p>
-        </div>
-    </div>
+    <div class="video-container" id="vc"></div>
     <div class="bottom-nav">
-        <span>🏠</span>
-        <button class="plus-btn" onclick="document.getElementById('up').classList.add('show')">+</button>
-        <span>👤</span>
+        <span style="color:white">🏠</span>
+        <button class="plus-btn" onclick="openUpload()">+</button>
+        <span style="color:white">👤</span>
     </div>
     <div class="upload-overlay" id="up">
         <div class="upload-box">
-            <h3>🎬 Загрузить видео</h3>
-            <input type="file" id="vf" accept="video/*">
-            <input type="text" id="vt" placeholder="Название">
-            <textarea id="vd" placeholder="Описание..."></textarea>
+            <h3>🎬 Загрузить</h3>
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('file')">📁 Файл</button>
+                <button class="tab" onclick="switchTab('link')">🔗 Ссылка</button>
+            </div>
+            <div id="tabFile">
+                <input type="file" id="vf" accept="video/*">
+            </div>
+            <div id="tabLink" style="display:none">
+                <input type="text" id="vl" placeholder="Ссылка на видео (YouTube, mp4)">
+            </div>
+            <input type="text" id="vt" placeholder="Название видео">
+            <textarea id="vd" placeholder="Описание..." rows="2"></textarea>
             <button onclick="upload()">✅ Опубликовать</button>
-            <button class="close-btn" onclick="document.getElementById('up').classList.remove('show')">Отмена</button>
+            <button class="close-btn" onclick="closeUpload()">Отмена</button>
         </div>
     </div>
 </div>
 <script>
-let v=[];
-function upload(){
-    let f=document.getElementById('vf').files[0];
-    let t=document.getElementById('vt').value||'Видео';
-    let d=document.getElementById('vd').value||'';
-    if(!f){alert('Выбери видео!');return}
-    v.unshift({url:URL.createObjectURL(f),title:t,desc:d,date:new Date().toLocaleString()});
+let videos=[];
+
+// Загружаем видео из localStorage (чтобы были видны всем кто открыл эту ссылку)
+function loadVideos(){
+    let saved=localStorage.getItem('tiktok_global_videos');
+    if(saved){
+        try{videos=JSON.parse(saved)}catch(e){videos=[]}
+    }
+    // Добавляем тестовое видео если пусто
+    if(videos.length===0){
+        videos.push({
+            url:'https://www.w3schools.com/html/mov_bbb.mp4',
+            title:'Тестовое видео (Big Buck Bunny)',
+            desc:'Это видео загружено по ссылке! Видно всем!',
+            date:new Date().toLocaleString()
+        });
+        saveVideos();
+    }
     render();
+}
+
+function saveVideos(){
+    localStorage.setItem('tiktok_global_videos',JSON.stringify(videos));
+}
+
+function switchTab(tab){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    if(tab==='file'){
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('tabFile').style.display='block';
+        document.getElementById('tabLink').style.display='none';
+    }else{
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tabFile').style.display='none';
+        document.getElementById('tabLink').style.display='block';
+    }
+}
+
+function openUpload(){
+    document.getElementById('up').classList.add('show');
+}
+
+function closeUpload(){
     document.getElementById('up').classList.remove('show');
     document.getElementById('vf').value='';
+    document.getElementById('vl').value='';
     document.getElementById('vt').value='';
     document.getElementById('vd').value='';
-    alert('✅ Готово!');
 }
+
+function upload(){
+    let title=document.getElementById('vt').value||'Без названия';
+    let desc=document.getElementById('vd').value||'';
+    let url='';
+    
+    // Проверяем файл
+    let file=document.getElementById('vf').files[0];
+    if(file){
+        url=URL.createObjectURL(file);
+    }
+    
+    // Проверяем ссылку
+    let link=document.getElementById('vl').value.trim();
+    if(link){
+        // Если это YouTube ссылка - преобразуем
+        if(link.includes('youtube.com/watch?v=')){
+            let videoId=link.split('v=')[1].split('&')[0];
+            url='https://www.youtube.com/embed/'+videoId;
+        }else if(link.includes('youtu.be/')){
+            let videoId=link.split('youtu.be/')[1].split('?')[0];
+            url='https://www.youtube.com/embed/'+videoId;
+        }else{
+            url=link; // Прямая ссылка на mp4
+        }
+    }
+    
+    if(!url){
+        alert('❌ Выбери файл или вставь ссылку!');
+        return;
+    }
+    
+    // YouTube видео вставляем через iframe
+    let isYoutube=url.includes('youtube.com/embed/');
+    
+    videos.unshift({
+        url:url,
+        title:title,
+        desc:desc,
+        date:new Date().toLocaleString(),
+        isYoutube:isYoutube
+    });
+    
+    saveVideos();
+    render();
+    closeUpload();
+    alert('✅ Видео опубликовано! Видно всем!');
+}
+
 function render(){
-    let c=document.getElementById('videoContainer');
+    let c=document.getElementById('vc');
     c.innerHTML='';
-    if(v.length===0){c.innerHTML='<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p></div>';return}
-    v.forEach(x=>{let s=document.createElement('div');s.className='video-slide';s.innerHTML='<video controls src="'+x.url+'"></video><div class="video-info"><b>'+x.title+'</b><br>'+x.desc+'<br><small>'+x.date+'</small></div>';c.appendChild(s)})
+    
+    if(videos.length===0){
+        c.innerHTML='<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p><p style="color:#666;font-size:12px;">Файл или ссылка - видно всем!</p></div>';
+        return;
+    }
+    
+    videos.forEach(v=>{
+        let s=document.createElement('div');
+        s.className='video-slide';
+        
+        if(v.isYoutube){
+            s.innerHTML='<iframe width="100%" height="250" src="'+v.url+'" frameborder="0" allowfullscreen style="border-radius:10px;max-width:100%;"></iframe><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';
+        }else{
+            s.innerHTML='<video controls src="'+v.url+'"></video><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';
+        }
+        
+        c.appendChild(s);
+    });
 }
-render();
+
+loadVideos();
 </script>
 </body>
 </html>
