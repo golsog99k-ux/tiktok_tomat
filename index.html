@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍅 TikTok Tomat</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#000;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center}
+        .phone{width:100%;max-width:400px;height:100vh;background:#000;position:relative;overflow:hidden}
+        .video-container{width:100%;height:calc(100% - 60px);overflow-y:scroll;padding-top:10px}
+        .video-slide{width:100%;min-height:calc(100vh - 70px);display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;border-bottom:1px solid #222;padding:15px}
+        h2{color:#ff4444;margin:15px 0}
+        .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:400px;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;align-items:center;padding:8px 0;height:55px}
+        .plus-btn{width:45px;height:45px;background:#ff4444;border-radius:50%;font-size:28px;color:white;border:none;cursor:pointer}
+        .upload-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:50;display:none;align-items:center;justify-content:center}
+        .upload-overlay.show{display:flex}
+        .upload-box{background:#1a1a1a;padding:20px;border-radius:20px;border:2px solid #ff4444;width:90%;max-width:350px}
+        .upload-box h3{color:#ff4444;text-align:center}
+        .upload-box input[type="file"]{width:100%;padding:12px;margin:10px 0;background:#0a0a0a;color:white;border-radius:10px;border:1px dashed #ff4444}
+        .upload-box input[type="text"],.upload-box textarea{width:100%;padding:10px;margin:8px 0;border-radius:10px;border:1px solid #333;background:#0a0a0a;color:white}
+        .upload-box button{width:100%;padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;font-weight:bold;cursor:pointer;margin-top:10px}
+        .upload-box .close-btn{background:#333}
+        video{width:100%;max-height:60vh;border-radius:10px;background:#000}
+        .video-info{color:white;padding:10px;text-align:left;width:100%}
+        .emoji-big{font-size:80px}
+    </style>
+</head>
+<body>
+<div class="phone">
+    <div class="video-container" id="videoContainer">
+        <div class="video-slide">
+            <span class="emoji-big">🍅</span>
+            <h2>TikTok Tomat</h2>
+            <p style="color:#ccc;">Загрузи видео через +</p>
+        </div>
+    </div>
+    <div class="bottom-nav">
+        <span>🏠</span>
+        <button class="plus-btn" onclick="document.getElementById('up').classList.add('show')">+</button>
+        <span>👤</span>
+    </div>
+    <div class="upload-overlay" id="up">
+        <div class="upload-box">
+            <h3>🎬 Загрузить видео</h3>
+            <input type="file" id="vf" accept="video/*">
+            <input type="text" id="vt" placeholder="Название">
+            <textarea id="vd" placeholder="Описание..."></textarea>
+            <button onclick="upload()">✅ Опубликовать</button>
+            <button class="close-btn" onclick="document.getElementById('up').classList.remove('show')">Отмена</button>
+        </div>
+    </div>
+</div>
+<script>
+let v=[];
+function upload(){
+    let f=document.getElementById('vf').files[0];
+    let t=document.getElementById('vt').value||'Видео';
+    let d=document.getElementById('vd').value||'';
+    if(!f){alert('Выбери видео!');return}
+    v.unshift({url:URL.createObjectURL(f),title:t,desc:d,date:new Date().toLocaleString()});
+    render();
+    document.getElementById('up').classList.remove('show');
+    document.getElementById('vf').value='';
+    document.getElementById('vt').value='';
+    document.getElementById('vd').value='';
+    alert('✅ Готово!');
+}
+function render(){
+    let c=document.getElementById('videoContainer');
+    c.innerHTML='';
+    if(v.length===0){c.innerHTML='<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p></div>';return}
+    v.forEach(x=>{let s=document.createElement('div');s.className='video-slide';s.innerHTML='<video controls src="'+x.url+'"></video><div class="video-info"><b>'+x.title+'</b><br>'+x.desc+'<br><small>'+x.date+'</small></div>';c.appendChild(s)})
+}
+render();
+</script>
+</body>
+</html>
