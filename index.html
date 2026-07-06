@@ -13,7 +13,7 @@
         h2{color:#ff4444;margin:15px 0}
         .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:400px;background:#000;border-top:1px solid #222;display:flex;justify-content:space-around;align-items:center;padding:8px 0;height:55px}
         .plus-btn{width:45px;height:45px;background:#ff4444;border-radius:50%;font-size:28px;color:white;border:none;cursor:pointer}
-        .upload-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:50;display:none;align-items:center;justify-content:center}
+        .upload-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:50;display:none;align-items:center;justify-content:center;flex-direction:column}
         .upload-overlay.show{display:flex}
         .upload-box{background:#1a1a1a;padding:20px;border-radius:20px;border:2px solid #ff4444;width:90%;max-width:350px}
         .upload-box h3{color:#ff4444;text-align:center;margin-bottom:15px}
@@ -25,21 +25,68 @@
         .upload-box .tab{flex:1;padding:8px;text-align:center;background:#333;color:white;border-radius:10px;cursor:pointer;font-size:12px;border:none}
         .upload-box .tab.active{background:#ff4444}
         video{width:100%;max-height:60vh;border-radius:10px;background:#000}
+        .video-info{padding:10px;text-align:left;width:100%}
+        .video-info b{color:#ff4444}
+        .user-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+        .avatar-small{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+        .username-text{color:white;font-weight:bold;font-size:13px;cursor:pointer;text-decoration:underline}
+        .verified-badge{display:inline-block;width:14px;height:14px;background:#1da1f2;border-radius:50%;text-align:center;line-height:14px;font-size:9px;margin-left:3px;color:white}
+        .emoji-big{font-size:80px}
+        
+        .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .login-box{text-align:center;color:white;width:80%;max-width:350px}
+        .login-box h2{color:#ff4444;margin-bottom:10px}
+        .login-box p{color:#ccc;font-size:13px;margin-bottom:20px}
+        .login-box input{width:100%;padding:12px;border-radius:20px;border:2px solid #ff4444;background:#1a1a1a;color:white;font-size:16px;text-align:center;margin:10px 0;outline:none}
+        .login-box button{width:100%;padding:12px;border-radius:20px;border:none;background:#ff4444;color:white;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px}
+        .login-error{color:#ff4444;font-size:12px;margin-top:5px;display:none}
+        
+        .profile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:55;display:none;flex-direction:column;align-items:center;padding:30px 20px;overflow-y:auto}
+        .profile-overlay.show{display:flex}
+        .profile-back{position:fixed;top:15px;left:15px;background:#ff4444;color:white;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;font-weight:bold;z-index:56}
+        .profile-avatar-big{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:40px 0 15px}
+        .profile-name{color:white;font-size:20px;font-weight:bold}
+        .profile-bio{color:#aaa;font-size:13px;margin:5px 0 20px}
+        .profile-stats{display:flex;gap:30px;margin:15px 0}
+        .profile-stat{text-align:center}
+        .profile-stat .num{color:white;font-weight:bold;font-size:18px}
+        .profile-stat .lbl{color:#aaa;font-size:11px}
+        .logout-btn{background:#333;color:white;border:none;padding:10px 30px;border-radius:20px;cursor:pointer;margin-top:20px;font-weight:bold}
     </style>
 </head>
 <body>
-<div class="phone">
-    <div class="video-container" id="vc">
-        <div class="video-slide">
-            <span style="font-size:80px">🍅</span>
-            <h2>TikTok Tomat</h2>
-            <p style="color:#ccc;">Загрузи видео через +</p>
-        </div>
+
+<!-- ОКНО ВХОДА -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <span style="font-size:60px">🍅</span>
+        <h2>TikTok Tomat</h2>
+        <p>Введите ваш никнейм чтобы войти</p>
+        <input type="text" id="nickInput" placeholder="@никнейм">
+        <button onclick="login()">✅ Войти</button>
+        <div class="login-error" id="loginError">❌ Аккаунт не найден! Попробуй @qwopzet3 или @acxer_1</div>
     </div>
+</div>
+
+<!-- ПРОФИЛЬ -->
+<div class="profile-overlay" id="profileOverlay">
+    <button class="profile-back" onclick="closeProfile()">← Назад</button>
+    <div class="profile-avatar-big" id="profileAvatar">👑</div>
+    <div class="profile-name" id="profileName">@qwopzet3</div>
+    <div class="profile-bio" id="profileBio">Шеф | Создатель TikTok Tomat</div>
+    <div class="profile-stats">
+        <div class="profile-stat"><div class="num" id="profileVideos">0</div><div class="lbl">Видео</div></div>
+        <div class="profile-stat"><div class="num">∞</div><div class="lbl">Подписчики</div></div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Выйти</button>
+</div>
+
+<div class="phone">
+    <div class="video-container" id="vc"></div>
     <div class="bottom-nav">
         <span style="color:white">🏠</span>
         <button class="plus-btn" onclick="openUpload()">+</button>
-        <span style="color:white">👤</span>
+        <span style="color:white;cursor:pointer" onclick="openProfile()">👤</span>
     </div>
     <div class="upload-overlay" id="up">
         <div class="upload-box">
@@ -57,32 +104,169 @@
         </div>
     </div>
 </div>
+
 <script>
-let videos=[];
-function openUpload(){document.getElementById('up').classList.add('show')}
+// Аккаунты
+const users = {
+    'qwopzet3': { emoji:'👑', name:'@qwopzet3', bio:'Шеф | Создатель TikTok Tomat | Adovi Hub', color:'#ff4444', verified:true },
+    'acxer_1': { emoji:'🔥', name:'@acxer_1', bio:'Бро | Легенда | Друг Шефа', color:'#ff8800', verified:false }
+};
+
+let currentUser = null;
+let videos = [];
+
+function login(){
+    let nick = document.getElementById('nickInput').value.trim().replace('@','');
+    
+    if(users[nick]){
+        currentUser = users[nick];
+        currentUser.key = nick;
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('loginError').style.display = 'none';
+        loadVideos();
+        alert('✅ Добро пожаловать, ' + currentUser.name + '!');
+    } else {
+        document.getElementById('loginError').style.display = 'block';
+        document.getElementById('nickInput').value = '';
+    }
+}
+
+function logout(){
+    currentUser = null;
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('profileOverlay').classList.remove('show');
+    document.getElementById('nickInput').value = '';
+    document.getElementById('loginError').style.display = 'none';
+}
+
+function openProfile(){
+    if(!currentUser){ alert('Сначала войди в аккаунт!'); return; }
+    
+    document.getElementById('profileAvatar').style.background = currentUser.color;
+    document.getElementById('profileAvatar').textContent = currentUser.emoji;
+    document.getElementById('profileName').textContent = currentUser.name;
+    document.getElementById('profileBio').textContent = currentUser.bio;
+    
+    // Считаем видео пользователя
+    let count = videos.filter(v => v.userKey === currentUser.key).length;
+    document.getElementById('profileVideos').textContent = count;
+    
+    document.getElementById('profileOverlay').classList.add('show');
+}
+
+function closeProfile(){
+    document.getElementById('profileOverlay').classList.remove('show');
+}
+
+function loadVideos(){
+    let saved = localStorage.getItem('tiktok_global_videos');
+    if(saved){ try{videos=JSON.parse(saved)}catch(e){videos=[]} }
+    render();
+}
+
+function saveVideos(){ localStorage.setItem('tiktok_global_videos', JSON.stringify(videos)); }
+
+function openUpload(){
+    if(!currentUser){ alert('Сначала войди в аккаунт!'); return; }
+    document.getElementById('up').classList.add('show');
+}
+
 function switchTab(tab){
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    if(tab==='file'){document.querySelectorAll('.tab')[0].classList.add('active');document.getElementById('tabFile').style.display='block';document.getElementById('tabLink').style.display='none'}
-    else{document.querySelectorAll('.tab')[1].classList.add('active');document.getElementById('tabFile').style.display='none';document.getElementById('tabLink').style.display='block'}
-}
-function upload(){
-    let t=document.getElementById('vt').value||'Видео';
-    let d=document.getElementById('vd').value||'';
-    let url='';
-    let f=document.getElementById('vf').files[0];
-    if(f){url=URL.createObjectURL(f)}
-    let l=document.getElementById('vl').value.trim();
-    if(l){
-        if(l.includes('youtube.com/watch?v=')){url='https://www.youtube.com/embed/'+l.split('v=')[1].split('&')[0]}
-        else if(l.includes('youtu.be/')){url='https://www.youtube.com/embed/'+l.split('youtu.be/')[1].split('?')[0]}
-        else{url=l}
+    if(tab==='file'){
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('tabFile').style.display='block';
+        document.getElementById('tabLink').style.display='none';
+    }else{
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('tabFile').style.display='none';
+        document.getElementById('tabLink').style.display='block';
     }
-    if(!url){alert('❌ Выбери файл или вставь ссылку!');return}
-    let yt=url.includes('youtube.com/embed/');
-    videos.unshift({url:url,title:t,desc:d,date:new Date().toLocaleString(),yt:yt});
+}
+
+function upload(){
+    if(!currentUser){ alert('Сначала войди в аккаунт!'); return; }
+    
+    let title = document.getElementById('vt').value || 'Без названия';
+    let desc = document.getElementById('vd').value || '';
+    let url = '';
+    
+    let file = document.getElementById('vf').files[0];
+    if(file){ url = URL.createObjectURL(file); }
+    
+    let link = document.getElementById('vl').value.trim();
+    if(link){
+        if(link.includes('youtube.com/watch?v=')){ url = 'https://www.youtube.com/embed/'+link.split('v=')[1].split('&')[0]; }
+        else if(link.includes('youtu.be/')){ url = 'https://www.youtube.com/embed/'+link.split('youtu.be/')[1].split('?')[0]; }
+        else { url = link; }
+    }
+    
+    if(!url){ alert('❌ Выбери файл или вставь ссылку!'); return; }
+    
+    let isYt = url.includes('youtube.com/embed/');
+    
+    videos.unshift({
+        url: url,
+        title: title,
+        desc: desc,
+        date: new Date().toLocaleString(),
+        isYoutube: isYt,
+        userKey: currentUser.key
+    });
+    
+    saveVideos();
     render();
     document.getElementById('up').classList.remove('show');
-    alert('✅ Опубликовано!');
+    alert('✅ Опубликовано от имени ' + currentUser.name + '!');
 }
+
 function render(){
-    let c=document.getElementById('vc');c.innerHTML='';
+    let c = document.getElementById('vc');
+    c.innerHTML = '';
+    
+    if(videos.length === 0){
+        c.innerHTML = '<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p></div>';
+        return;
+    }
+    
+    videos.forEach(v => {
+        let user = users[v.userKey] || users['qwopzet3'];
+        let s = document.createElement('div');
+        s.className = 'video-slide';
+        
+        let videoHTML = '';
+        if(v.isYoutube){
+            videoHTML = '<iframe width="100%" height="250" src="'+v.url+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';
+        } else {
+            videoHTML = '<video controls src="'+v.url+'"></video>';
+        }
+        
+        s.innerHTML = videoHTML + 
+            '<div class="video-info">' +
+            '<div class="user-row">' +
+            '<div class="avatar-small" style="background:'+user.color+';">'+user.emoji+'</div>' +
+            '<span class="username-text" onclick="showUserProfile(\''+v.userKey+'\')">'+user.name+(user.verified?' <span class="verified-badge">✓</span>':'')+'</span>' +
+            '</div>' +
+            '<b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small>' +
+            '</div>';
+        
+        c.appendChild(s);
+    });
+}
+
+function showUserProfile(key){
+    let user = users[key];
+    if(!user) return;
+    document.getElementById('profileAvatar').style.background = user.color;
+    document.getElementById('profileAvatar').textContent = user.emoji;
+    document.getElementById('profileName').textContent = user.name;
+    document.getElementById('profileBio').textContent = user.bio;
+    let count = videos.filter(v => v.userKey === key).length;
+    document.getElementById('profileVideos').textContent = count;
+    document.getElementById('profileOverlay').classList.add('show');
+}
+
+loadVideos();
+</script>
+</body>
+</html>
