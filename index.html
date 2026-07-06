@@ -60,126 +60,44 @@
 </div>
 <script>
 let videos=[];
-
-// Загружаем видео из localStorage (чтобы были видны всем кто открыл эту ссылку)
 function loadVideos(){
     let saved=localStorage.getItem('tiktok_global_videos');
-    if(saved){
-        try{videos=JSON.parse(saved)}catch(e){videos=[]}
-    }
-    // Добавляем тестовое видео если пусто
-    if(videos.length===0){
-        videos.push({
-            url:'https://www.w3schools.com/html/mov_bbb.mp4',
-            title:'Тестовое видео (Big Buck Bunny)',
-            desc:'Это видео загружено по ссылке! Видно всем!',
-            date:new Date().toLocaleString()
-        });
-        saveVideos();
-    }
+    if(saved){try{videos=JSON.parse(saved)}catch(e){videos=[]}}
     render();
 }
-
-function saveVideos(){
-    localStorage.setItem('tiktok_global_videos',JSON.stringify(videos));
-}
-
+function saveVideos(){localStorage.setItem('tiktok_global_videos',JSON.stringify(videos));}
 function switchTab(tab){
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    if(tab==='file'){
-        document.querySelectorAll('.tab')[0].classList.add('active');
-        document.getElementById('tabFile').style.display='block';
-        document.getElementById('tabLink').style.display='none';
-    }else{
-        document.querySelectorAll('.tab')[1].classList.add('active');
-        document.getElementById('tabFile').style.display='none';
-        document.getElementById('tabLink').style.display='block';
-    }
+    if(tab==='file'){document.querySelectorAll('.tab')[0].classList.add('active');document.getElementById('tabFile').style.display='block';document.getElementById('tabLink').style.display='none';}
+    else{document.querySelectorAll('.tab')[1].classList.add('active');document.getElementById('tabFile').style.display='none';document.getElementById('tabLink').style.display='block';}
 }
-
-function openUpload(){
-    document.getElementById('up').classList.add('show');
-}
-
-function closeUpload(){
-    document.getElementById('up').classList.remove('show');
-    document.getElementById('vf').value='';
-    document.getElementById('vl').value='';
-    document.getElementById('vt').value='';
-    document.getElementById('vd').value='';
-}
-
+function openUpload(){document.getElementById('up').classList.add('show');}
+function closeUpload(){document.getElementById('up').classList.remove('show');document.getElementById('vf').value='';document.getElementById('vl').value='';document.getElementById('vt').value='';document.getElementById('vd').value='';}
 function upload(){
     let title=document.getElementById('vt').value||'Без названия';
     let desc=document.getElementById('vd').value||'';
     let url='';
-    
-    // Проверяем файл
     let file=document.getElementById('vf').files[0];
-    if(file){
-        url=URL.createObjectURL(file);
-    }
-    
-    // Проверяем ссылку
+    if(file){url=URL.createObjectURL(file);}
     let link=document.getElementById('vl').value.trim();
     if(link){
-        // Если это YouTube ссылка - преобразуем
-        if(link.includes('youtube.com/watch?v=')){
-            let videoId=link.split('v=')[1].split('&')[0];
-            url='https://www.youtube.com/embed/'+videoId;
-        }else if(link.includes('youtu.be/')){
-            let videoId=link.split('youtu.be/')[1].split('?')[0];
-            url='https://www.youtube.com/embed/'+videoId;
-        }else{
-            url=link; // Прямая ссылка на mp4
-        }
+        if(link.includes('youtube.com/watch?v=')){let id=link.split('v=')[1].split('&')[0];url='https://www.youtube.com/embed/'+id;}
+        else if(link.includes('youtu.be/')){let id=link.split('youtu.be/')[1].split('?')[0];url='https://www.youtube.com/embed/'+id;}
+        else{url=link;}
     }
-    
-    if(!url){
-        alert('❌ Выбери файл или вставь ссылку!');
-        return;
-    }
-    
-    // YouTube видео вставляем через iframe
-    let isYoutube=url.includes('youtube.com/embed/');
-    
-    videos.unshift({
-        url:url,
-        title:title,
-        desc:desc,
-        date:new Date().toLocaleString(),
-        isYoutube:isYoutube
-    });
-    
-    saveVideos();
-    render();
-    closeUpload();
-    alert('✅ Видео опубликовано! Видно всем!');
+    if(!url){alert('❌ Выбери файл или вставь ссылку!');return;}
+    let isYt=url.includes('youtube.com/embed/');
+    videos.unshift({url:url,title:title,desc:desc,date:new Date().toLocaleString(),isYoutube:isYt});
+    saveVideos();render();closeUpload();alert('✅ Опубликовано!');
 }
-
 function render(){
-    let c=document.getElementById('vc');
-    c.innerHTML='';
-    
-    if(videos.length===0){
-        c.innerHTML='<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p><p style="color:#666;font-size:12px;">Файл или ссылка - видно всем!</p></div>';
-        return;
-    }
-    
-    videos.forEach(v=>{
-        let s=document.createElement('div');
-        s.className='video-slide';
-        
-        if(v.isYoutube){
-            s.innerHTML='<iframe width="100%" height="250" src="'+v.url+'" frameborder="0" allowfullscreen style="border-radius:10px;max-width:100%;"></iframe><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';
-        }else{
-            s.innerHTML='<video controls src="'+v.url+'"></video><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';
-        }
-        
-        c.appendChild(s);
-    });
+    let c=document.getElementById('vc');c.innerHTML='';
+    if(videos.length===0){c.innerHTML='<div class="video-slide"><span class="emoji-big">🍅</span><h2>TikTok Tomat</h2><p style="color:#ccc;">Загрузи видео через +</p></div>';return;}
+    videos.forEach(v=>{let s=document.createElement('div');s.className='video-slide';
+        if(v.isYoutube){s.innerHTML='<iframe width="100%" height="250" src="'+v.url+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';}
+        else{s.innerHTML='<video controls src="'+v.url+'"></video><div class="video-info"><b>'+v.title+'</b><br>'+v.desc+'<br><small style="color:#666;">'+v.date+'</small></div>';}
+        c.appendChild(s);});
 }
-
 loadVideos();
 </script>
 </body>
