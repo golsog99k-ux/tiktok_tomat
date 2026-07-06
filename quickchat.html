@@ -16,6 +16,15 @@
         .header .back-btn{background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;display:none}
         .header .title{font-weight:bold;font-size:16px;flex:1}.header .title span{color:#ff4444}
         .header .theme-btn{background:none;border:none;color:var(--text);font-size:16px;cursor:pointer}
+        .stories-bar{display:flex;gap:10px;padding:10px;overflow-x:auto;background:var(--header);border-bottom:1px solid #222;flex-shrink:0}
+        .story-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;min-width:55px}
+        .story-circle{width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:25px;border:3px solid #ff4444;padding:2px}
+        .story-name{color:var(--text);font-size:10px;text-align:center;max-width:55px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .story-viewer{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:110;display:none;align-items:center;justify-content:center;flex-direction:column}
+        .story-viewer.show{display:flex}
+        .story-viewer .story-content{font-size:80px;margin-bottom:20px}
+        .story-viewer .story-text{color:white;font-size:18px;margin-bottom:30px}
+        .story-viewer button{padding:10px 30px;background:#ff4444;color:white;border:none;border-radius:20px;cursor:pointer;font-weight:bold}
         .contacts-list{flex:1;overflow-y:auto;padding:8px}
         .contact-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;cursor:pointer;color:var(--text);border-bottom:1px solid #222}
         .contact-item:hover{background:var(--header)}
@@ -37,16 +46,12 @@
         .input-area input{flex:1;padding:10px;border-radius:20px;border:none;background:var(--input-bg);color:var(--text);font-size:13px;outline:none}
         .input-area button{width:35px;height:35px;border-radius:50%;border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
         .input-area .send-btn{background:#ff4444}.input-area .sticker-btn{background:#ff8800}.input-area .video-btn{background:#0088ff}.input-area .file-btn{background:#44aa44}
+        .input-area .story-btn{background:#ff44aa}
         .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column}
         .login-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
         .login-box h2{color:#ff4444;margin-bottom:8px}.login-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
         .login-box button{width:100%;padding:10px;background:#ff4444;color:white;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px}
         .login-box .guest-btn{background:#333;margin-top:5px}
-        .admin-panel{display:none;padding:10px;background:var(--header);border-top:1px solid #ff4444;flex-shrink:0;max-height:200px;overflow-y:auto}
-        .admin-panel h3{color:#ff4444;font-size:13px;margin-bottom:8px}
-        .admin-panel input{width:100%;padding:7px;margin:3px 0;border-radius:5px;border:1px solid #333;background:var(--input-bg);color:var(--text);font-size:11px}
-        .admin-panel button{padding:6px 10px;background:#ff4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:10px;margin:2px}
-        .admin-panel .ban-btn{background:#ff0000}.admin-panel .verify-btn{background:#1da1f2}.admin-panel .mute-btn{background:#ff8800}
         .profile-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:95;display:none;flex-direction:column;align-items:center;padding:30px}
         .profile-overlay.show{display:flex}.profile-overlay .ava-big{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:50px;margin:20px 0}
         .profile-overlay .name-big{color:white;font-size:20px;font-weight:bold}.profile-overlay .status-text{color:#888;font-size:13px;margin:5px 0}
@@ -57,6 +62,12 @@
         .online-list{position:absolute;top:40px;right:10px;background:var(--header);border-radius:10px;padding:10px;z-index:15;display:none;max-height:200px;overflow-y:auto;min-width:150px;box-shadow:0 4px 15px rgba(0,0,0,0.5)}
         .online-list.show{display:block}.online-list .online-item{color:var(--text);padding:5px;font-size:12px;display:flex;align-items:center;gap:5px}
         .online-list .online-item .dot{width:8px;height:8px;border-radius:50%;background:#00ff00}
+        .settings-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:90;display:none;flex-direction:column;padding:20px;overflow-y:auto}
+        .settings-overlay.show{display:flex}
+        .settings-overlay h2{color:#ff4444;margin-bottom:15px}
+        .settings-overlay button{padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;margin:5px 0;cursor:pointer;font-weight:bold}
+        .settings-overlay .close-btn{background:#333}
+        .settings-overlay input{width:100%;padding:8px;margin:5px 0;border-radius:5px;border:1px solid #333;background:var(--input-bg);color:var(--text);font-size:12px}
     </style>
 </head>
 <body>
@@ -66,8 +77,15 @@
         <div class="title">⚡ <span id="headerTitle">QuickChat</span></div>
         <button class="theme-btn" onclick="toggleTheme()">🌓</button>
         <button class="theme-btn" onclick="toggleOnlineList()">🟢</button>
+        <button class="theme-btn" onclick="openSettings()">⋮</button>
     </div>
     <div class="online-list" id="onlineList"></div>
+    <div class="stories-bar" id="storiesBar"></div>
+    <div class="story-viewer" id="storyViewer">
+        <div class="story-content" id="storyContent">🍅</div>
+        <div class="story-text" id="storyText">История</div>
+        <button onclick="closeStory()">✕ Закрыть</button>
+    </div>
     <div class="user-status" id="userStatus">Вы не вошли</div>
     <div class="contacts-list" id="contactsList"></div>
     <div class="messages" id="messagesContainer" style="display:none"></div>
@@ -75,20 +93,13 @@
         <button class="sticker-btn" onclick="sendSticker()">😀</button>
         <button class="video-btn" onclick="sendVideo()">📹</button>
         <button class="file-btn" onclick="sendFile()">📎</button>
+        <button class="story-btn" onclick="addStory()">📖</button>
         <input type="text" id="messageInput" placeholder="Сообщение..." oninput="typing()">
         <button class="send-btn" onclick="sendMessage()">➤</button>
     </div>
     <button class="new-chat-btn" id="newChatBtn" onclick="showNewChat()" style="display:none">+</button>
-    <div class="admin-panel" id="adminPanel">
-        <h3>👑 Админ-панель</h3>
-        <input type="text" id="newUserNick" placeholder="Никнейм"><input type="text" id="newUserCode" placeholder="Код" readonly>
-        <button onclick="generateCode()">🎫 Создать код</button>
-        <input type="text" id="banUserNick" placeholder="Ник для бана"><button class="ban-btn" onclick="banUser()">🚫 Бан</button>
-        <input type="text" id="verifyUserNick" placeholder="Ник для галочки"><button class="verify-btn" onclick="verifyUser()">✓ Галочка</button>
-        <input type="text" id="muteUserNick" placeholder="Ник для мута"><button class="mute-btn" onclick="muteUser()">🔇 Мут</button>
-        <button onclick="logout()">🚪 Выйти</button>
-    </div>
 </div>
+
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box" id="loginBox">
         <h2>⚡ QuickChat Pro</h2><p style="color:#ccc;font-size:12px">Введи код или войди как гость</p>
@@ -97,16 +108,33 @@
         <div id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>
     </div>
 </div>
+
 <div class="profile-overlay" id="profileOverlay">
     <div class="ava-big" id="profileAva">👤</div><div class="name-big" id="profileName">Пользователь</div><div class="status-text" id="profileStatus">В сети</div>
     <button onclick="startChatFromProfile()">💬 Написать</button>
     <button id="muteBtn" onclick="muteFromProfile()" style="background:#ff8800;">🔇 Мут</button>
     <button class="close-btn" onclick="closeProfile()">✕ Закрыть</button>
 </div>
+
+<div class="settings-overlay" id="settingsOverlay">
+    <h2>⚙️ Настройки</h2>
+    <button onclick="changeAvatar()">📸 Сменить аватарку</button>
+    <button id="adminBtn" onclick="showAdminPanel()" style="display:none">👑 Админ-панель</button>
+    <div id="adminPanelInSettings" style="display:none">
+        <input type="text" id="newUserNick" placeholder="Никнейм"><input type="text" id="newUserCode" placeholder="Код" readonly>
+        <button onclick="generateCode()">🎫 Создать код</button>
+        <input type="text" id="banUserNick" placeholder="Ник для бана"><button class="ban-btn" onclick="banUser()" style="background:#ff0000;">🚫 Бан</button>
+        <input type="text" id="verifyUserNick" placeholder="Ник для галочки"><button class="verify-btn" onclick="verifyUser()" style="background:#1da1f2;">✓ Галочка</button>
+        <input type="text" id="muteUserNick" placeholder="Ник для мута"><button class="mute-btn" onclick="muteUser()" style="background:#ff8800;">🔇 Мут</button>
+    </div>
+    <button onclick="logout()" style="background:#ff4444;">🚪 Выйти</button>
+    <button class="close-btn" onclick="closeSettings()">✕ Закрыть</button>
+</div>
+
 <script>
-const firebaseConfig = {databaseURL:"https://quickchat-c8bc2-default-rtdb.firebaseio.com/"};
+const firebaseConfig={databaseURL:"https://quickchat-c8bc2-default-rtdb.firebaseio.com/"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db=firebase.database();
 let currentUser=null,currentToken=null,isAdmin=false,currentChat=null,selectedProfile=null;
 const ADMIN_KEY="danil_admin_2025";
 let adminList={},allUsers={},onlineUsers={},mutedUsers={};
@@ -122,128 +150,86 @@ if(localStorage.getItem('theme')==='light')document.getElementById('app').classL
 
 function updateOnlineList(){
     let list=document.getElementById('onlineList');list.innerHTML='';
-    for(let[nick,data]of Object.entries(onlineUsers)){if(nick===currentUser)continue;
+    for(let[nick]of Object.entries(onlineUsers)){if(nick===currentUser)continue;
         let div=document.createElement('div');div.className='online-item';
         div.innerHTML='<span class="dot"></span>'+nick;list.appendChild(div);}
 }
 function toggleOnlineList(){document.getElementById('onlineList').classList.toggle('show');}
 function setOnline(){if(!currentUser||currentUser==='admin'||currentUser.startsWith('guest'))return;
     db.ref('online/'+currentUser).set({time:Date.now()});db.ref('online/'+currentUser).onDisconnect().remove();}
-    function login(){
+
+function openSettings(){
+    if(isAdmin||currentUser==='admin')document.getElementById('adminBtn').style.display='block';
+    document.getElementById('settingsOverlay').classList.add('show');
+}
+function closeSettings(){document.getElementById('settingsOverlay').classList.remove('show');}
+function showAdminPanel(){document.getElementById('adminPanelInSettings').style.display='block';}
+
+function changeAvatar(){
+    let emojis=['👤','👑','🐱','🤖','🔥','💀','🍅','⚡','🎯','🌟','💎','🎭','🐉','🦊','🐼'];
+    let avatar=prompt('Выбери эмодзи:\n'+emojis.join(' '),getEmoji(currentUser));
+    if(avatar&&emojis.includes(avatar)){db.ref('codes/'+currentToken+'/avatar').set(avatar);alert('✅ Аватарка обновлена!');showContacts();}
+}
+
+function login(){
     let code=document.getElementById('codeInput').value.trim();
-    if(code===ADMIN_KEY){
-        currentUser='admin';currentToken=ADMIN_KEY;isAdmin=true;
-        db.ref('admins/'+ADMIN_KEY).set(true);
-        document.getElementById('loginOverlay').style.display='none';
-        document.getElementById('adminPanel').style.display='block';
-        document.getElementById('userStatus').textContent='👑 Админ';
-        document.getElementById('userStatus').style.background='rgba(255,68,68,0.4)';
-        showContacts();return;
-    }
-    db.ref('codes/'+code).once('value').then(snap=>{
-        let data=snap.val();
-        if(data&&data.banned){
-            document.getElementById('loginBox').innerHTML='<h2 style="color:#ff0000;">🚫 ВЫ ЗАБАНЕНЫ!</h2><p style="color:#ccc;">Доступ запрещён</p>';return;
-        }
-        if(data&&!data.banned){
-            currentUser=data.nick||data;currentToken=code;isAdmin=!!adminList[code];
-            document.getElementById('loginOverlay').style.display='none';
-            if(isAdmin)document.getElementById('adminPanel').style.display='block';
-            document.getElementById('userStatus').textContent='👤 '+(data.nick||'Пользователь');
-            document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';
-            showContacts();setOnline();
-        }else{document.getElementById('loginError').style.display='block';setTimeout(()=>document.getElementById('loginError').style.display='none',2000);}
+    if(code===ADMIN_KEY){currentUser='admin';currentToken=ADMIN_KEY;isAdmin=true;db.ref('admins/'+ADMIN_KEY).set(true);document.getElementById('loginOverlay').style.display='none';document.getElementById('userStatus').textContent='👑 Админ';document.getElementById('userStatus').style.background='rgba(255,68,68,0.4)';showContacts();loadStories();return;}
+    db.ref('codes/'+code).once('value').then(snap=>{let data=snap.val();
+        if(data&&data.banned){document.getElementById('loginBox').innerHTML='<h2 style="color:#ff0000;">🚫 ВЫ ЗАБАНЕНЫ!</h2><p style="color:#ccc;">Доступ запрещён</p>';return;}
+        if(data&&!data.banned){currentUser=data.nick||data;currentToken=code;isAdmin=!!adminList[code];document.getElementById('loginOverlay').style.display='none';document.getElementById('userStatus').textContent='👤 '+(data.nick||'Пользователь');document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';showContacts();setOnline();loadStories();}
+        else{document.getElementById('loginError').style.display='block';setTimeout(()=>document.getElementById('loginError').style.display='none',2000);}
     });
 }
 
-function guestLogin(){
-    currentUser='guest_'+Math.floor(Math.random()*9999);currentToken=null;isAdmin=false;
-    document.getElementById('loginOverlay').style.display='none';
-    document.getElementById('userStatus').textContent='👻 Гость';
-    document.getElementById('userStatus').style.background='rgba(100,100,100,0.3)';
-    showContacts();
-}
+function guestLogin(){currentUser='guest_'+Math.floor(Math.random()*9999);currentToken=null;isAdmin=false;document.getElementById('loginOverlay').style.display='none';document.getElementById('userStatus').textContent='👻 Гость';document.getElementById('userStatus').style.background='rgba(100,100,100,0.3)';showContacts();loadStories();}
 
 function showContacts(){
-    document.getElementById('contactsList').style.display='block';document.getElementById('messagesContainer').style.display='none';
-    document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='block';
-    document.getElementById('headerTitle').textContent='QuickChat';document.getElementById('backBtn').style.display='none';
+    document.getElementById('contactsList').style.display='block';document.getElementById('messagesContainer').style.display='none';document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='block';document.getElementById('headerTitle').textContent='QuickChat';document.getElementById('backBtn').style.display='none';
     let list=document.getElementById('contactsList');list.innerHTML='';let users=allUsers||{};let hasUsers=false;
-    for(let[code,data]of Object.entries(users)){
-        if(code===ADMIN_KEY)continue;let nick=data.nick||data;if(typeof nick!=='string')continue;if(nick===currentUser)continue;hasUsers=true;
+    for(let[code,data]of Object.entries(users)){if(code===ADMIN_KEY)continue;let nick=data.nick||data;if(typeof nick!=='string')continue;if(nick===currentUser)continue;hasUsers=true;
         let div=document.createElement('div');div.className='contact-item';div.onclick=function(){openChat(nick);};
-        div.innerHTML='<div class="ava" style="background:'+getColor(nick)+';">'+getEmoji(nick)+'<div class="online-dot" style="display:'+(onlineUsers[nick]?'block':'none')+'"></div></div><div class="info"><div class="name">'+nick+' '+(data.verified?'✓':'')+' '+(data.banned?'🚫':'')+'</div><div class="status">'+(onlineUsers[nick]?'В сети':'Был(а) недавно')+'</div></div>';
+        div.innerHTML='<div class="ava" style="background:'+getColor(nick)+';">'+(data.avatar||getEmoji(nick))+'<div class="online-dot" style="display:'+(onlineUsers[nick]?'block':'none')+'"></div></div><div class="info"><div class="name">'+nick+' '+(data.verified?'✓':'')+' '+(data.banned?'🚫':'')+'</div><div class="status">'+(onlineUsers[nick]?'В сети':'Был(а) недавно')+'</div></div>';
         list.appendChild(div);
     }
     if(!hasUsers)list.innerHTML='<div class="empty-state"><div class="icon">👥</div><p>Нет контактов</p><p style="font-size:11px">Админ может создать коды</p></div>';
 }
 
-function openChat(nick){
-    currentChat=nick;document.getElementById('contactsList').style.display='none';
-    document.getElementById('messagesContainer').style.display='flex';document.getElementById('inputArea').style.display='flex';
-    document.getElementById('newChatBtn').style.display='none';document.getElementById('headerTitle').textContent='@'+nick;
-    document.getElementById('backBtn').style.display='block';loadMessages();
-}
-
+function openChat(nick){currentChat=nick;document.getElementById('contactsList').style.display='none';document.getElementById('messagesContainer').style.display='flex';document.getElementById('inputArea').style.display='flex';document.getElementById('newChatBtn').style.display='none';document.getElementById('headerTitle').textContent='@'+nick;document.getElementById('backBtn').style.display='block';loadMessages();}
 function goBack(){currentChat=null;showContacts();}
 function showNewChat(){let nick=prompt('Введи ник собеседника:');if(!nick)return;openChat(nick);}
-    function startChatFromProfile(){if(selectedProfile){openChat(selectedProfile);closeProfile();}}
-function showProfile(nick){selectedProfile=nick;document.getElementById('profileAva').textContent=getEmoji(nick);document.getElementById('profileAva').style.background=getColor(nick);document.getElementById('profileName').textContent=nick;document.getElementById('profileStatus').textContent=onlineUsers[nick]?'В сети':'Был(а) недавно';document.getElementById('profileOverlay').classList.add('show');}
+function startChatFromProfile(){if(selectedProfile){openChat(selectedProfile);closeProfile();}}
+function showProfile(nick){selectedProfile=nick;let data=allUsers[Object.keys(allUsers).find(k=>(allUsers[k].nick||allUsers[k])===nick)]||{};document.getElementById('profileAva').textContent=data.avatar||getEmoji(nick);document.getElementById('profileAva').style.background=getColor(nick);document.getElementById('profileName').textContent=nick;document.getElementById('profileStatus').textContent=onlineUsers[nick]?'В сети':'Был(а) недавно';document.getElementById('profileOverlay').classList.add('show');}
 function closeProfile(){document.getElementById('profileOverlay').classList.remove('show');selectedProfile=null;}
 
 function generateCode(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('newUserNick').value.trim();if(!nick)return alert('Введи ник!');let code=Math.floor(1000+Math.random()*9000).toString();db.ref('codes/'+code).set({nick:nick,verified:false,banned:false,muted:false});document.getElementById('newUserCode').value=code;}
-function banUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('banUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/banned').set(true);alert('🚫 @'+nick+' забанен!');return;}}}
+function banUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('banUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/banned').set(true);alert('🚫 @'+nick+' забанен! Он больше не зайдёт!');return;}}}
 function verifyUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('verifyUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/verified').set(true);alert('✓ @'+nick+' верифицирован!');return;}}}
 function muteUser(){if(!isAdmin&&currentUser!=='admin')return;let nick=document.getElementById('muteUserNick').value.trim();if(!nick)return alert('Введи ник!');for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===nick){db.ref('codes/'+key+'/muted').set(true);alert('🔇 @'+nick+' замучен!');return;}}}
 function muteFromProfile(){if(!isAdmin||!selectedProfile)return;for(let[key,val]of Object.entries(allUsers)){if((val.nick||val)===selectedProfile){db.ref('codes/'+key+'/muted').set(true);alert('🔇 @'+selectedProfile+' замучен!');closeProfile();return;}}}
 
 function sendMessage(){let text=document.getElementById('messageInput').value.trim();if(!text||!currentUser||!currentChat)return;if(mutedUsers[currentUser]){alert('🔇 Вы замучены!');return;}let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'text',text:text,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});document.getElementById('messageInput').value='';notify();}
 function sendSticker(){if(!currentUser||!currentChat)return;let stickers=['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡'];let s=stickers[Math.floor(Math.random()*stickers.length)];let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'sticker',text:s,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
-function sendVideo(){if(!currentUser||!currentChat)return;let url=prompt('Ссылка на видео (YouTube/mp4):');if(!url)return;if(url.includes('youtube.com/watch?v='))url='https://www.youtube.com/embed/'+url.split('v=')[1].split('&')[0];if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'video',text:url,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
+function sendVideo(){if(!currentUser||!currentChat)return;let url=prompt('Ссылка на видео:');if(!url)return;if(url.includes('youtube.com/watch?v='))url='https://www.youtube.com/embed/'+url.split('v=')[1].split('&')[0];if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'video',text:url,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
 function sendFile(){if(!currentUser||!currentChat)return;let url=prompt('Ссылка на файл:');if(!url)return;let chatId=[currentUser,currentChat].sort().join('_');let sender=currentUser==='admin'?'👑 Админ':currentUser;db.ref('chats/'+chatId).push({type:'file',text:url,sender:sender,time:new Date().toLocaleTimeString(),timestamp:Date.now()});notify();}
 function typing(){if(!currentUser||!currentChat)return;let chatId=[currentUser,currentChat].sort().join('_');db.ref('typing/'+chatId+'/'+currentUser).set(Date.now());setTimeout(()=>db.ref('typing/'+chatId+'/'+currentUser).remove(),3000);}
-    function loadMessages(){
-    if(!currentChat)return;
-    let chatId=[currentUser,currentChat].sort().join('_');
-    db.ref('typing/'+chatId).on('value',snap=>{
-        let typing=snap.val()||{};let status=document.getElementById('headerTitle');
-        let typingUsers=Object.keys(typing).filter(k=>k!==currentUser&&Date.now()-typing[k]<3000);
-        if(typingUsers.length>0)status.textContent='@'+currentChat+' ✍️';else status.textContent='@'+currentChat;
-    });
-    db.ref('chats/'+chatId).on('value',snap=>{
-        let c=document.getElementById('messagesContainer');let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);
-        if(arr.length===0){c.innerHTML='<div class="empty-state"><div class="icon">💬</div><p>Нет сообщений</p><p style="font-size:11px">Напишите первое сообщение!</p></div>';}
-        else{c.innerHTML='';arr.forEach((m,index)=>{let isMine=m.sender===currentUser||(m.sender==='👑 Админ'&&currentUser==='admin');let d=document.createElement('div');d.className='msg '+(isMine?'sent':'received');let content='';if(!isMine)content+='<div class="sender">'+m.sender+'</div>';if(m.pinned)content+='<div class="pinned">📌 Закреплено</div>';if(m.type==='sticker')content+='<div class="sticker">'+m.text+'</div>';else if(m.type==='video')content+='<iframe width="100%" height="150" src="'+m.text+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';else if(m.type==='file')content+='<a href="'+m.text+'" target="_blank" style="color:#44aa44;">📎 Скачать файл</a>';else content+=m.text;content+='<div class="time">'+m.time+'</div>';if(isMine&&m.type==='text'){content+='<button class="edit-btn" onclick="editMessage(\''+chatId+'\',\''+index+'\',\''+m.text.replace(/'/g,"\\'")+'\')">✏️</button>';}if(isAdmin||currentUser==='admin'){content+='<button class="edit-btn" style="right:30px;" onclick="pinMessage(\''+chatId+'\',\''+index+'\')">📌</button>';}d.innerHTML=content;d.setAttribute('data-index',index);d.setAttribute('data-chat',chatId);c.appendChild(d);});}c.scrollTop=c.scrollHeight;
-    });
-}
 
-function editMessage(chatId,index,oldText){
-    let newText=prompt('Редактировать сообщение:',oldText);
-    if(newText&&newText!==oldText){db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/text').set(newText);db.ref('chats/'+chatId+'/'+keys[index]+'/edited').set(true);}});}
-}
+function addStory(){if(!currentUser||currentUser==='admin'||currentUser.startsWith('guest'))return;let emoji=prompt('Эмодзи для истории:',getEmoji(currentUser));let text=prompt('Текст истории:','Привет!');if(emoji&&text){db.ref('stories/'+currentUser).set({emoji:emoji,text:text,time:Date.now(),nick:currentUser});}}
+function loadStories(){db.ref('stories').on('value',snap=>{let stories=snap.val()||{};let bar=document.getElementById('storiesBar');bar.innerHTML='';for(let[nick,data]of Object.entries(stories)){if(Date.now()-data.time>86400000){db.ref('stories/'+nick).remove();continue;}let div=document.createElement('div');div.className='story-item';div.onclick=function(){viewStory(nick,data);};div.innerHTML='<div class="story-circle" style="background:'+getColor(nick)+';">'+data.emoji+'</div><div class="story-name">'+nick+'</div>';bar.appendChild(div);}});}
+function viewStory(nick,data){document.getElementById('storyContent').textContent=data.emoji;document.getElementById('storyText').textContent=nick+': '+data.text;document.getElementById('storyViewer').classList.add('show');}
+function closeStory(){document.getElementById('storyViewer').classList.remove('show');}
 
-function pinMessage(chatId,index){
-    db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/pinned').set(true);alert('📌 Сообщение закреплено!');}});
-}
+function loadMessages(){if(!currentChat)return;let chatId=[currentUser,currentChat].sort().join('_');db.ref('typing/'+chatId).on('value',snap=>{let typing=snap.val()||{};let status=document.getElementById('headerTitle');let typingUsers=Object.keys(typing).filter(k=>k!==currentUser&&Date.now()-typing[k]<3000);if(typingUsers.length>0)status.textContent='@'+currentChat+' ✍️';else status.textContent='@'+currentChat;});db.ref('chats/'+chatId).on('value',snap=>{let c=document.getElementById('messagesContainer');let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);if(arr.length===0){c.innerHTML='<div class="empty-state"><div class="icon">💬</div><p>Нет сообщений</p></div>';}else{c.innerHTML='';arr.forEach((m,index)=>{let isMine=m.sender===currentUser||(m.sender==='👑 Админ'&&currentUser==='admin');let d=document.createElement('div');d.className='msg '+(isMine?'sent':'received');let content='';if(!isMine)content+='<div class="sender">'+m.sender+'</div>';if(m.pinned)content+='<div class="pinned">📌 Закреплено</div>';if(m.type==='sticker')content+='<div class="sticker">'+m.text+'</div>';else if(m.type==='video')content+='<iframe width="100%" height="150" src="'+m.text+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';else if(m.type==='file')content+='<a href="'+m.text+'" target="_blank" style="color:#44aa44;">📎 Скачать файл</a>';else content+=m.text;content+='<div class="time">'+m.time+'</div>';if(isMine&&m.type==='text'){content+='<button class="edit-btn" onclick="editMessage(\''+chatId+'\',\''+index+'\',\''+m.text.replace(/'/g,"\\'")+'\')">✏️</button>';}if(isAdmin||currentUser==='admin'){content+='<button class="edit-btn" style="right:30px;" onclick="pinMessage(\''+chatId+'\',\''+index+'\')">📌</button>';}d.innerHTML=content;c.appendChild(d);});}c.scrollTop=c.scrollHeight;});}
 
-function searchMessages(){
-    let query=document.getElementById('searchInput').value.toLowerCase().trim();
-    let msgs=document.querySelectorAll('.msg');msgs.forEach(m=>{if(!query||m.textContent.toLowerCase().includes(query)){m.style.display='block';}else{m.style.display='none';}});
-}
+function editMessage(chatId,index,oldText){let newText=prompt('Редактировать:',oldText);if(newText&&newText!==oldText){db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/text').set(newText);db.ref('chats/'+chatId+'/'+keys[index]+'/edited').set(true);}});}}
+function pinMessage(chatId,index){db.ref('chats/'+chatId).once('value').then(snap=>{let msgs=snap.val()||{};let arr=Object.values(msgs).sort((a,b)=>a.timestamp-b.timestamp);let keys=Object.keys(msgs).sort((a,b)=>msgs[a].timestamp-msgs[b].timestamp);if(keys[index]){db.ref('chats/'+chatId+'/'+keys[index]+'/pinned').set(true);alert('📌 Закреплено!');}});}
 
-function logout(){
-    if(currentUser&&currentUser!=='admin'&&!currentUser.startsWith('guest')){db.ref('online/'+currentUser).remove();}
-    currentUser=null;currentToken=null;isAdmin=false;currentChat=null;
-    document.getElementById('loginOverlay').style.display='flex';document.getElementById('adminPanel').style.display='none';
-    document.getElementById('contactsList').style.display='none';document.getElementById('messagesContainer').style.display='none';
-    document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='none';
-    document.getElementById('userStatus').textContent='Вы не вошли';document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';
-}
+function logout(){if(currentUser&&currentUser!=='admin'&&!currentUser.startsWith('guest')){db.ref('online/'+currentUser).remove();}currentUser=null;currentToken=null;isAdmin=false;currentChat=null;document.getElementById('loginOverlay').style.display='flex';document.getElementById('contactsList').style.display='none';document.getElementById('messagesContainer').style.display='none';document.getElementById('inputArea').style.display='none';document.getElementById('newChatBtn').style.display='none';document.getElementById('userStatus').textContent='Вы не вошли';document.getElementById('userStatus').style.background='rgba(255,68,68,0.2)';closeSettings();}
 
 function getColor(nick){let colors=['#ff4444','#ff8800','#ffaa00','#44aa44','#4488ff','#aa44ff','#ff44aa'];let hash=0;for(let i=0;i<nick.length;i++)hash=nick.charCodeAt(i)+((hash<<5)-hash);return colors[Math.abs(hash)%colors.length];}
 function getEmoji(nick){let emojis=['👤','👑','🐱','🤖','🔥','💀','🍅','⚡','🎯','🌟','💎','🎭','🐉','🦊','🐼'];let hash=0;for(let i=0;i<nick.length;i++)hash=nick.charCodeAt(i)+((hash<<5)-hash);return emojis[Math.abs(hash)%emojis.length];}
 
 showContacts();
+loadStories();
 </script>
 </body>
 </html>
