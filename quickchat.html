@@ -9,44 +9,82 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#1a1a2e;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center}
-        .phone{width:100%;max-width:400px;height:100vh;background:#0a0a1a;display:flex;flex-direction:column}
-        .header{background:#16213e;padding:15px;color:white;text-align:center;font-weight:bold;font-size:18px;border-bottom:2px solid #ff4444}
-        .header span{color:#ff4444}
-        .messages{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px}
-        .msg{max-width:80%;padding:10px 15px;border-radius:15px;color:white;font-size:14px;word-break:break-word}
+        .phone{width:100%;max-width:400px;height:100vh;background:#0a0a1a;display:flex;flex-direction:column;position:relative}
+        .header{background:#16213e;padding:10px;color:white;display:flex;align-items:center;gap:10px;border-bottom:2px solid #ff4444;flex-shrink:0}
+        .header .menu-btn{background:none;border:none;color:white;font-size:20px;cursor:pointer}
+        .header .title{font-weight:bold;font-size:16px;flex:1}
+        .header .title span{color:#ff4444}
+        .search-bar{padding:8px;background:#16213e;display:flex;gap:5px}
+        .search-bar input{flex:1;padding:8px;border-radius:15px;border:none;background:#0a0a1a;color:white;font-size:12px;outline:none}
+        .messages{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+        .msg{max-width:80%;padding:8px 12px;border-radius:12px;color:white;font-size:13px;word-break:break-word;position:relative}
         .msg.sent{background:#ff4444;align-self:flex-end}
         .msg.received{background:#16213e;align-self:flex-start}
-        .msg .sender{font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:3px}
-        .msg .time{font-size:10px;color:rgba(255,255,255,0.4);text-align:right;margin-top:5px}
-        .input-area{display:flex;padding:10px;gap:10px;background:#16213e}
-        .input-area input{flex:1;padding:12px;border-radius:25px;border:none;background:#0a0a1a;color:white;font-size:14px;outline:none}
-        .input-area button{width:45px;height:45px;border-radius:50%;border:none;background:#ff4444;color:white;font-size:20px;cursor:pointer}
-        .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:100;display:flex;align-items:center;justify-content:center}
-        .login-box{background:#16213e;padding:30px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
-        .login-box h2{color:#ff4444;margin-bottom:10px}
-        .login-box input{width:100%;padding:12px;margin:10px 0;border-radius:10px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
-        .login-box button{width:100%;padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px}
-        .admin-panel{display:none;padding:10px;background:#0a0a1a;border-top:1px solid #ff4444}
-        .admin-panel h3{color:#ff4444;font-size:14px;margin-bottom:10px}
-        .admin-panel input{width:100%;padding:8px;margin:5px 0;border-radius:5px;border:1px solid #333;background:#16213e;color:white;font-size:12px}
-        .admin-panel button{padding:8px 15px;background:#ff4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:12px;margin:3px}
-        .error{color:#ff4444;font-size:12px;display:none;margin-top:5px}
+        .msg .sender{font-size:10px;color:rgba(255,255,255,0.6);margin-bottom:2px;display:flex;align-items:center;gap:5px}
+        .msg .sender .ava{width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+        .msg .time{font-size:9px;color:rgba(255,255,255,0.4);text-align:right;margin-top:3px}
+        .msg .sticker{font-size:40px}
+        .empty-state{text-align:center;color:#666;padding:30px;flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column}
+        .empty-state .icon{font-size:50px;margin-bottom:10px}
+        .input-area{display:flex;padding:8px;gap:5px;background:#16213e;flex-shrink:0;align-items:center}
+        .input-area input{flex:1;padding:10px;border-radius:20px;border:none;background:#0a0a1a;color:white;font-size:13px;outline:none}
+        .input-area button{width:35px;height:35px;border-radius:50%;border:none;background:#ff4444;color:white;font-size:16px;cursor:pointer}
+        .input-area .sticker-btn{background:#ff8800}
+        .input-area .video-btn{background:#0088ff}
+        .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column}
+        .login-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
+        .login-box h2{color:#ff4444;margin-bottom:8px}
+        .login-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
+        .login-box button{width:100%;padding:10px;background:#ff4444;color:white;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px}
+        .login-box .guest-btn{background:#333;margin-top:5px}
+        .admin-panel{display:none;padding:10px;background:#0a0a1a;border-top:1px solid #ff4444;flex-shrink:0;max-height:200px;overflow-y:auto}
+        .admin-panel h3{color:#ff4444;font-size:13px;margin-bottom:8px}
+        .admin-panel input{width:100%;padding:7px;margin:3px 0;border-radius:5px;border:1px solid #333;background:#16213e;color:white;font-size:11px}
+        .admin-panel button{padding:6px 10px;background:#ff4444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:10px;margin:2px}
+        .admin-panel .ban-btn{background:#ff0000}
+        .admin-panel .verify-btn{background:#1da1f2}
+        .settings-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:90;display:none;flex-direction:column;padding:20px}
+        .settings-overlay.show{display:flex}
+        .settings-overlay h2{color:#ff4444;margin-bottom:15px}
+        .settings-overlay button{padding:12px;background:#ff4444;color:white;border:none;border-radius:10px;margin:5px 0;cursor:pointer;font-weight:bold}
+        .settings-overlay .close-settings{background:#333}
+        .verified-badge{display:inline-block;width:14px;height:14px;background:#1da1f2;border-radius:50%;text-align:center;line-height:14px;font-size:9px;color:white;margin-left:3px}
+        .user-status{color:white;font-size:11px;padding:5px 10px;background:rgba(255,68,68,0.2);text-align:center}
     </style>
 </head>
 <body>
 
 <div class="phone" id="app">
-    <div class="header">⚡ <span>QuickChat</span></div>
-    <div class="messages" id="messagesContainer"></div>
-    <div class="input-area">
+    <div class="header">
+        <button class="menu-btn" onclick="openSettings()">⋮</button>
+        <div class="title">⚡ <span>QuickChat</span></div>
+    </div>
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Поиск по нику..." oninput="filterMessages()">
+    </div>
+    <div class="user-status" id="userStatus">Вы не вошли</div>
+    <div class="messages" id="messagesContainer">
+        <div class="empty-state">
+            <div class="icon">💬</div>
+            <p>Пусто</p>
+            <p style="font-size:11px">Нет сообщений или каналов</p>
+        </div>
+    </div>
+    <div class="input-area" id="inputArea">
         <input type="text" id="messageInput" placeholder="Сообщение...">
+        <button class="sticker-btn" onclick="sendSticker()">😀</button>
+        <button class="video-btn" onclick="sendVideo()">📹</button>
         <button onclick="sendMessage()">➤</button>
     </div>
     <div class="admin-panel" id="adminPanel">
         <h3>👑 Админ-панель</h3>
-        <input type="text" id="newUserNick" placeholder="Никнейм друга">
-        <input type="text" id="newUserCode" placeholder="Код появится здесь" readonly>
+        <input type="text" id="newUserNick" placeholder="Никнейм">
+        <input type="text" id="newUserCode" placeholder="Код" readonly>
         <button onclick="generateCode()">🎫 Создать код</button>
+        <input type="text" id="banUserNick" placeholder="Ник для бана">
+        <button class="ban-btn" onclick="banUser()">🚫 Забанить</button>
+        <input type="text" id="verifyUserNick" placeholder="Ник для галочки">
+        <button class="verify-btn" onclick="verifyUser()">✓ Дать галочку</button>
         <button onclick="logout()">🚪 Выйти</button>
     </div>
 </div>
@@ -54,13 +92,21 @@
 <div class="login-overlay" id="loginOverlay">
     <div class="login-box">
         <h2>⚡ QuickChat</h2>
-        <p style="color:#ccc;font-size:13px;margin-bottom:15px;">Введи код чтобы войти</p>
+        <p style="color:#ccc;font-size:12px">Введи код или войди как гость</p>
         <input type="text" id="codeInput" placeholder="Код">
         <button onclick="login()">✅ Войти</button>
-        <div class="error" id="loginError">❌ Неверный код!</div>
+        <button class="guest-btn" onclick="guestLogin()">👻 Войти как гость</button>
+        <div class="error" id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>
     </div>
 </div>
 
+<div class="settings-overlay" id="settingsOverlay">
+    <h2>⚙️ Настройки</h2>
+    <button onclick="openAdminFromSettings()">👑 Админ-панель</button>
+    <button class="ban-btn" onclick="document.getElementById('banUserNick').focus()">🚫 Забанить</button>
+    <button class="verify-btn" onclick="document.getElementById('verifyUserNick').focus()">✓ Дать галочку</button>
+    <button class="close-settings" onclick="closeSettings()">✕ Закрыть</button>
+</divв>  
 <script>
 const firebaseConfig = {
     databaseURL: "https://quickchat-c8bc2-default-rtdb.firebaseio.com/"
@@ -69,21 +115,32 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let currentUser = null;
+let currentToken = null;
 const ADMIN_KEY = "danil_admin_2025";
 
+// Вход
 function login(){
     let code = document.getElementById('codeInput').value.trim();
     if(code === ADMIN_KEY){
         currentUser = 'admin';
+        currentToken = ADMIN_KEY;
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
+        document.getElementById('userStatus').textContent = '👑 Админ';
+        document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.4)';
         return;
     }
     db.ref('codes/' + code).once('value').then(snap => {
-        if(snap.val()){
-            currentUser = snap.val();
+        let data = snap.val();
+        if(data && !data.banned){
+            currentUser = data.nick || data;
+            currentToken = code;
             document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('userStatus').textContent = '👤 @' + currentUser + (data.verified ? ' ✓' : '');
+            document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
             loadMessages();
+        }else if(data && data.banned){
+            alert('🚫 Вы забанены!');
         }else{
             document.getElementById('loginError').style.display = 'block';
             setTimeout(() => document.getElementById('loginError').style.display = 'none', 2000);
@@ -91,48 +148,193 @@ function login(){
     });
 }
 
+// Гостевой вход
+function guestLogin(){
+    currentUser = 'guest_' + Math.floor(Math.random() * 9999);
+    currentToken = null;
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('userStatus').textContent = '👻 Гость: ' + currentUser;
+    document.getElementById('userStatus').style.background = 'rgba(100,100,100,0.3)';
+    loadMessages();
+}
+
+// Генерация кода
 function generateCode(){
+    if(currentUser !== 'admin') return;
     let nick = document.getElementById('newUserNick').value.trim();
     if(!nick) return alert('Введи ник!');
     let code = Math.floor(1000 + Math.random() * 9000).toString();
-    db.ref('codes/' + code).set(nick);
+    db.ref('codes/' + code).set({nick: nick, verified: false, banned: false});
     document.getElementById('newUserCode').value = code;
 }
 
+// Бан
+function banUser(){
+    if(currentUser !== 'admin') return;
+    let nick = document.getElementById('banUserNick').value.trim();
+    if(!nick) return alert('Введи ник!');
+    db.ref('codes').once('value').then(snap => {
+        let codes = snap.val() || {};
+        for(let [key, val] of Object.entries(codes)){
+            if((val.nick || val) === nick){
+                db.ref('codes/' + key + '/banned').set(true);
+                alert('🚫 @' + nick + ' забанен!');
+                return;
+            }
+        }
+        alert('❌ Пользователь не найден!');
+    });
+}
+
+// Верификация
+function verifyUser(){
+    if(currentUser !== 'admin') return;
+    let nick = document.getElementById('verifyUserNick').value.trim();
+    if(!nick) return alert('Введи ник!');
+    db.ref('codes').once('value').then(snap => {
+        let codes = snap.val() || {};
+        for(let [key, val] of Object.entries(codes)){
+            if((val.nick || val) === nick){
+                db.ref('codes/' + key + '/verified').set(true);
+                alert('✓ @' + nick + ' получил галочку!');
+                return;
+            }
+        }
+        alert('❌ Пользователь не найден!');
+    });
+}
+
+// Отправка сообщения
 function sendMessage(){
     let text = document.getElementById('messageInput').value.trim();
     if(!text || !currentUser) return;
+    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
     db.ref('messages').push({
+        type: 'text',
         text: text,
-        sender: currentUser === 'admin' ? '👑 Шеф' : '@' + currentUser,
+        sender: sender,
+        senderKey: currentUser,
         time: new Date().toLocaleTimeString(),
         timestamp: Date.now()
     });
     document.getElementById('messageInput').value = '';
 }
 
+// Стикер
+function sendSticker(){
+    if(!currentUser) return;
+    let stickers = ['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡','🎉','💩','👍','👎','😡','🥺'];
+    let sticker = stickers[Math.floor(Math.random() * stickers.length)];
+    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
+    db.ref('messages').push({
+        type: 'sticker',
+        text: sticker,
+        sender: sender,
+        senderKey: currentUser,
+        time: new Date().toLocaleTimeString(),
+        timestamp: Date.now()
+    });
+}
+
+// Видео
+function sendVideo(){
+    if(!currentUser) return;
+    let url = prompt('Вставь ссылку на видео (YouTube/mp4):');
+    if(!url) return;
+    if(url.includes('youtube.com/watch?v=')) url = 'https://www.youtube.com/embed/' + url.split('v=')[1].split('&')[0];
+    if(url.includes('youtu.be/')) url = 'https://www.youtube.com/embed/' + url.split('youtu.be/')[1].split('?')[0];
+    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
+    db.ref('messages').push({
+        type: 'video',
+        text: url,
+        sender: sender,
+        senderKey: currentUser,
+        time: new Date().toLocaleTimeString(),
+        timestamp: Date.now()
+    });
+}
+
+// Загрузка сообщений
 function loadMessages(){
     db.ref('messages').on('value', snap => {
         let c = document.getElementById('messagesContainer');
         c.innerHTML = '';
         let msgs = snap.val() || {};
-        Object.values(msgs).sort((a,b) => a.timestamp - b.timestamp).forEach(m => {
+        let arr = Object.values(msgs).sort((a,b) => a.timestamp - b.timestamp);
+        
+        if(arr.length === 0){
+            c.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>Пусто</p><p style="font-size:11px">Нет сообщений или каналов</p></div>';
+            return;
+        }
+        
+        arr.forEach(m => {
+            let isMine = m.senderKey === currentUser;
             let d = document.createElement('div');
-            let isMine = (m.sender === '👑 Шеф' && currentUser === 'admin') || m.sender === ('@' + currentUser);
             d.className = 'msg ' + (isMine ? 'sent' : 'received');
-            d.innerHTML = (isMine ? '' : '<div class="sender">' + m.sender + '</div>') + m.text + '<div class="time">' + m.time + '</div>';
+            
+            let content = '';
+            if(!isMine) content += '<div class="sender"><span class="ava" style="background:#ff4444;">' + (m.sender.includes('👑')?'👑':m.sender.includes('👻')?'👻':'@') + '</span>' + m.sender + '</div>';
+            
+            if(m.type === 'sticker') content += '<div class="sticker">' + m.text + '</div>';
+            else if(m.type === 'video') content += '<iframe width="100%" height="150" src="' + m.text + '" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';
+            else content += m.text;
+            
+            content += '<div class="time">' + m.time + '</div>';
+            d.innerHTML = content;
             c.appendChild(d);
         });
+        
         c.scrollTop = c.scrollHeight;
     });
 }
 
+// Поиск
+function filterMessages(){
+    let query = document.getElementById('searchInput').value.toLowerCase().trim();
+    let msgs = document.querySelectorAll('.msg');
+    msgs.forEach(m => {
+        if(!query || m.textContent.toLowerCase().includes(query)){
+            m.style.display = 'block';
+        }else{
+            m.style.display = 'none';
+        }
+    });
+}
+
+// Настройки
+function openSettings(){
+    document.getElementById('settingsOverlay').classList.add('show');
+}
+
+function closeSettings(){
+    document.getElementById('settingsOverlay').classList.remove('show');
+}
+
+function openAdminFromSettings(){
+    if(currentUser !== 'admin'){
+        let code = prompt('Введи админ-ключ:');
+        if(code === ADMIN_KEY){
+            currentUser = 'admin';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('userStatus').textContent = '👑 Админ';
+            closeSettings();
+        }else{
+            alert('❌ Неверный ключ!');
+        }
+    }else{
+        document.getElementById('adminPanel').style.display = 'block';
+        closeSettings();
+    }
+}
+
+// Выход
 function logout(){
     currentUser = null;
+    currentToken = null;
     document.getElementById('loginOverlay').style.display = 'flex';
     document.getElementById('adminPanel').style.display = 'none';
     document.getElementById('codeInput').value = '';
+    document.getElementById('userStatus').textContent = 'Вы не вошли';
+    document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
 }
 </script>
-</body>
-</html>
