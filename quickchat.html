@@ -28,9 +28,12 @@
         .empty-state .icon{font-size:50px;margin-bottom:10px}
         .input-area{display:flex;padding:8px;gap:5px;background:#16213e;flex-shrink:0;align-items:center}
         .input-area input{flex:1;padding:10px;border-radius:20px;border:none;background:#0a0a1a;color:white;font-size:13px;outline:none}
-        .input-area button{width:35px;height:35px;border-radius:50%;border:none;background:#ff4444;color:white;font-size:16px;cursor:pointer}
+        .input-area .left-btns{display:flex;gap:3px}
+        .input-area button{width:35px;height:35px;border-radius:50%;border:none;color:white;font-size:16px;cursor:pointer;flex-shrink:0}
+        .input-area .send-btn{background:#ff4444}
         .input-area .sticker-btn{background:#ff8800}
         .input-area .video-btn{background:#0088ff}
+        .input-area .me-btn{background:#ff4444;width:auto;padding:0 12px;border-radius:20px;font-size:12px;font-weight:bold;margin-left:auto}
         .login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:100;display:flex;align-items:center;justify-content:center;flex-direction:column}
         .login-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
         .login-box h2{color:#ff4444;margin-bottom:8px}
@@ -50,6 +53,12 @@
         .settings-overlay .close-settings{background:#333}
         .verified-badge{display:inline-block;width:14px;height:14px;background:#1da1f2;border-radius:50%;text-align:center;line-height:14px;font-size:9px;color:white;margin-left:3px}
         .user-status{color:white;font-size:11px;padding:5px 10px;background:rgba(255,68,68,0.2);text-align:center}
+        .name-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:95;display:none;align-items:center;justify-content:center}
+        .name-overlay.show{display:flex}
+        .name-box{background:#16213e;padding:25px;border-radius:20px;text-align:center;color:white;width:90%;max-width:350px}
+        .name-box h2{color:#ff4444;margin-bottom:10px}
+        .name-box input{width:100%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ff4444;background:#0a0a1a;color:white;font-size:14px;text-align:center;outline:none}
+        .name-box button{width:100%;padding:10px;background:#ff4444;color:white;border:none;border-radius:8px;font-weight:bold;font-size:14px;cursor:pointer;margin-top:8px}
     </style>
 </head>
 <body>
@@ -71,10 +80,13 @@
         </div>
     </div>
     <div class="input-area" id="inputArea">
+        <div class="left-btns">
+            <button class="sticker-btn" onclick="sendSticker()">😀</button>
+            <button class="video-btn" onclick="sendVideo()">📹</button>
+        </div>
         <input type="text" id="messageInput" placeholder="Сообщение...">
-        <button class="sticker-btn" onclick="sendSticker()">😀</button>
-        <button class="video-btn" onclick="sendVideo()">📹</button>
-        <button onclick="sendMessage()">➤</button>
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+        <button class="me-btn" onclick="showMyProfile()">Я</button>
     </div>
     <div class="admin-panel" id="adminPanel">
         <h3>👑 Админ-панель</h3>
@@ -90,7 +102,7 @@
 </div>
 
 <div class="login-overlay" id="loginOverlay">
-    <div class="login-box">
+    <div class="login-box" id="loginBox">
         <h2>⚡ QuickChat</h2>
         <p style="color:#ccc;font-size:12px">Введи код или войди как гость</p>
         <input type="text" id="codeInput" placeholder="Код">
@@ -100,13 +112,21 @@
     </div>
 </div>
 
+<div class="name-overlay" id="nameOverlay">
+    <div class="name-box">
+        <h2>👤 Ваше имя</h2>
+        <p style="color:#ccc;font-size:12px">Придумайте себе имя</p>
+        <input type="text" id="nameInput" placeholder="Ваше имя">
+        <button onclick="setName()">✅ Сохранить</button>
+    </div>
+</div>
+
 <div class="settings-overlay" id="settingsOverlay">
-    <h2>⚙️ Настройки</h2>
-    <button onclick="openAdminFromSettings()">👑 Админ-панель</button>
-    <button class="ban-btn" onclick="document.getElementById('banUserNick').focus()">🚫 Забанить</button>
-    <button class="verify-btn" onclick="document.getElementById('verifyUserNick').focus()">✓ Дать галочку</button>
+    <h2>⚙️ <span id="settingsTitle">Настройки</span></h2>
+    <div id="settingsContent"></div>
     <button class="close-settings" onclick="closeSettings()">✕ Закрыть</button>
-</divв>  
+</div>
+
 <script>
 const firebaseConfig = {
     databaseURL: "https://quickchat-c8bc2-default-rtdb.firebaseio.com/"
@@ -116,31 +136,44 @@ const db = firebase.database();
 
 let currentUser = null;
 let currentToken = null;
+let isAdmin = false;
 const ADMIN_KEY = "danil_admin_2025";
+let adminList = {};
+db.ref('admins').on('value', snap => { adminList = snap.val() || {}; });
 
-// Вход
 function login(){
     let code = document.getElementById('codeInput').value.trim();
     if(code === ADMIN_KEY){
         currentUser = 'admin';
         currentToken = ADMIN_KEY;
+        isAdmin = true;
+        db.ref('admins/' + ADMIN_KEY).set(true);
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('userStatus').textContent = '👑 Админ';
         document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.4)';
+        loadMessages();
         return;
     }
     db.ref('codes/' + code).once('value').then(snap => {
         let data = snap.val();
+        if(data && data.banned){
+            document.getElementById('loginBox').innerHTML = '<h2 style="color:#ff0000;">🚫 ВЫ ЗАБАНЕНЫ!</h2><p style="color:#ccc;">Доступ запрещён</p>';
+            return;
+        }
         if(data && !data.banned){
             currentUser = data.nick || data;
             currentToken = code;
+            isAdmin = !!adminList[code];
             document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('userStatus').textContent = '👤 @' + currentUser + (data.verified ? ' ✓' : '');
-            document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
-            loadMessages();
-        }else if(data && data.banned){
-            alert('🚫 Вы забанены!');
+            if(isAdmin) document.getElementById('adminPanel').style.display = 'block';
+            if(!data.nick){
+                document.getElementById('nameOverlay').classList.add('show');
+            }else{
+                document.getElementById('userStatus').textContent = '👤 ' + data.nick + (data.verified ? ' ✓' : '');
+                document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
+                loadMessages();
+            }
         }else{
             document.getElementById('loginError').style.display = 'block';
             setTimeout(() => document.getElementById('loginError').style.display = 'none', 2000);
@@ -148,19 +181,30 @@ function login(){
     });
 }
 
-// Гостевой вход
-function guestLogin(){
-    currentUser = 'guest_' + Math.floor(Math.random() * 9999);
-    currentToken = null;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('userStatus').textContent = '👻 Гость: ' + currentUser;
-    document.getElementById('userStatus').style.background = 'rgba(100,100,100,0.3)';
+function setName(){
+    let name = document.getElementById('nameInput').value.trim();
+    if(!name) return alert('Введи имя!');
+    db.ref('codes/' + currentToken + '/nick').set(name);
+    currentUser = name;
+    document.getElementById('nameOverlay').classList.remove('show');
+    document.getElementById('userStatus').textContent = '👤 ' + name;
+    document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
     loadMessages();
 }
 
-// Генерация кода
+function guestLogin(){
+    currentUser = 'guest_' + Math.floor(Math.random() * 9999);
+    currentToken = null;
+    isAdmin = false;
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('userStatus').textContent = '👻 Гость: ' + currentUser;
+    document.getElementById('userStatus').style.background = 'rgba(100,100,100,0.3)';
+    document.getElementById('inputArea').style.display = 'none';
+    loadMessages();
+}
+
 function generateCode(){
-    if(currentUser !== 'admin') return;
+    if(!isAdmin && currentUser !== 'admin') return;
     let nick = document.getElementById('newUserNick').value.trim();
     if(!nick) return alert('Введи ник!');
     let code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -168,9 +212,8 @@ function generateCode(){
     document.getElementById('newUserCode').value = code;
 }
 
-// Бан
 function banUser(){
-    if(currentUser !== 'admin') return;
+    if(!isAdmin && currentUser !== 'admin') return;
     let nick = document.getElementById('banUserNick').value.trim();
     if(!nick) return alert('Введи ник!');
     db.ref('codes').once('value').then(snap => {
@@ -182,13 +225,11 @@ function banUser(){
                 return;
             }
         }
-        alert('❌ Пользователь не найден!');
     });
 }
 
-// Верификация
 function verifyUser(){
-    if(currentUser !== 'admin') return;
+    if(!isAdmin && currentUser !== 'admin') return;
     let nick = document.getElementById('verifyUserNick').value.trim();
     if(!nick) return alert('Введи ник!');
     db.ref('codes').once('value').then(snap => {
@@ -196,113 +237,95 @@ function verifyUser(){
         for(let [key, val] of Object.entries(codes)){
             if((val.nick || val) === nick){
                 db.ref('codes/' + key + '/verified').set(true);
-                alert('✓ @' + nick + ' получил галочку!');
+                alert('✓ @' + nick + ' верифицирован!');
                 return;
             }
         }
-        alert('❌ Пользователь не найден!');
     });
 }
 
-// Отправка сообщения
 function sendMessage(){
     let text = document.getElementById('messageInput').value.trim();
     if(!text || !currentUser) return;
-    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
     db.ref('messages').push({
-        type: 'text',
-        text: text,
-        sender: sender,
-        senderKey: currentUser,
-        time: new Date().toLocaleTimeString(),
-        timestamp: Date.now()
+        type: 'text', text: text,
+        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
+        time: new Date().toLocaleTimeString(), timestamp: Date.now()
     });
     document.getElementById('messageInput').value = '';
 }
 
-// Стикер
 function sendSticker(){
     if(!currentUser) return;
-    let stickers = ['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡','🎉','💩','👍','👎','😡','🥺'];
-    let sticker = stickers[Math.floor(Math.random() * stickers.length)];
-    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
+    let stickers = ['😂','❤️','🔥','😭','💀','🍅','👑','🐱','🤖','⚡'];
+    let s = stickers[Math.floor(Math.random()*stickers.length)];
     db.ref('messages').push({
-        type: 'sticker',
-        text: sticker,
-        sender: sender,
-        senderKey: currentUser,
-        time: new Date().toLocaleTimeString(),
-        timestamp: Date.now()
+        type: 'sticker', text: s,
+        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
+        time: new Date().toLocaleTimeString(), timestamp: Date.now()
     });
 }
 
-// Видео
 function sendVideo(){
     if(!currentUser) return;
-    let url = prompt('Вставь ссылку на видео (YouTube/mp4):');
+    let url = prompt('Ссылка на видео:');
     if(!url) return;
-    if(url.includes('youtube.com/watch?v=')) url = 'https://www.youtube.com/embed/' + url.split('v=')[1].split('&')[0];
-    if(url.includes('youtu.be/')) url = 'https://www.youtube.com/embed/' + url.split('youtu.be/')[1].split('?')[0];
-    let sender = currentUser === 'admin' ? '👑 Шеф' : (currentUser.startsWith('guest') ? '👻 ' + currentUser : '@' + currentUser);
+    if(url.includes('youtube.com/watch?v=')) url = 'https://www.youtube.com/embed/'+url.split('v=')[1].split('&')[0];
+    if(url.includes('youtu.be/')) url = 'https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
     db.ref('messages').push({
-        type: 'video',
-        text: url,
-        sender: sender,
-        senderKey: currentUser,
-        time: new Date().toLocaleTimeString(),
-        timestamp: Date.now()
+        type: 'video', text: url,
+        sender: currentUser === 'admin' ? '👑 Админ' : currentUser,
+        time: new Date().toLocaleTimeString(), timestamp: Date.now()
     });
 }
 
-// Загрузка сообщений
 function loadMessages(){
     db.ref('messages').on('value', snap => {
         let c = document.getElementById('messagesContainer');
-        c.innerHTML = '';
         let msgs = snap.val() || {};
         let arr = Object.values(msgs).sort((a,b) => a.timestamp - b.timestamp);
         
         if(arr.length === 0){
-            c.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>Пусто</p><p style="font-size:11px">Нет сообщений или каналов</p></div>';
-            return;
+            c.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>Пусто</p><p style="font-size:11px">Нет сообщений</p></div>';
+        }else{
+            c.innerHTML = '';
+            arr.forEach(m => {
+                let isMine = m.sender === currentUser || (m.sender === '👑 Админ' && currentUser === 'admin');
+                let d = document.createElement('div');
+                d.className = 'msg ' + (isMine ? 'sent' : 'received');
+                let content = '';
+                if(!isMine) content += '<div class="sender">' + m.sender + '</div>';
+                if(m.type === 'sticker') content += '<div class="sticker">'+m.text+'</div>';
+                else if(m.type === 'video') content += '<iframe width="100%" height="150" src="'+m.text+'" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';
+                else content += m.text;
+                content += '<div class="time">'+m.time+'</div>';
+                d.innerHTML = content;
+                c.appendChild(d);
+            });
         }
-        
-        arr.forEach(m => {
-            let isMine = m.senderKey === currentUser;
-            let d = document.createElement('div');
-            d.className = 'msg ' + (isMine ? 'sent' : 'received');
-            
-            let content = '';
-            if(!isMine) content += '<div class="sender"><span class="ava" style="background:#ff4444;">' + (m.sender.includes('👑')?'👑':m.sender.includes('👻')?'👻':'@') + '</span>' + m.sender + '</div>';
-            
-            if(m.type === 'sticker') content += '<div class="sticker">' + m.text + '</div>';
-            else if(m.type === 'video') content += '<iframe width="100%" height="150" src="' + m.text + '" frameborder="0" allowfullscreen style="border-radius:10px;"></iframe>';
-            else content += m.text;
-            
-            content += '<div class="time">' + m.time + '</div>';
-            d.innerHTML = content;
-            c.appendChild(d);
-        });
-        
         c.scrollTop = c.scrollHeight;
     });
 }
 
-// Поиск
 function filterMessages(){
-    let query = document.getElementById('searchInput').value.toLowerCase().trim();
-    let msgs = document.querySelectorAll('.msg');
-    msgs.forEach(m => {
-        if(!query || m.textContent.toLowerCase().includes(query)){
-            m.style.display = 'block';
-        }else{
-            m.style.display = 'none';
-        }
+    let q = document.getElementById('searchInput').value.toLowerCase().trim();
+    document.querySelectorAll('.msg').forEach(m => {
+        m.style.display = (!q || m.textContent.toLowerCase().includes(q)) ? 'block' : 'none';
     });
 }
 
-// Настройки
+function showMyProfile(){
+    if(!currentUser) return;
+    alert('👤 ' + currentUser + (isAdmin ? ' (Админ)' : ''));
+}
+
 function openSettings(){
+    let content = document.getElementById('settingsContent');
+    if(isAdmin || currentUser === 'admin'){
+        content.innerHTML = '<button onclick="document.getElementById(\'adminPanel\').style.display=\'block\'">👑 Админ-панель</button>';
+    }else{
+        content.innerHTML = '<p style="color:white;">👤 ' + (currentUser || 'Гость') + '</p>';
+    }
     document.getElementById('settingsOverlay').classList.add('show');
 }
 
@@ -310,31 +333,14 @@ function closeSettings(){
     document.getElementById('settingsOverlay').classList.remove('show');
 }
 
-function openAdminFromSettings(){
-    if(currentUser !== 'admin'){
-        let code = prompt('Введи админ-ключ:');
-        if(code === ADMIN_KEY){
-            currentUser = 'admin';
-            document.getElementById('adminPanel').style.display = 'block';
-            document.getElementById('userStatus').textContent = '👑 Админ';
-            closeSettings();
-        }else{
-            alert('❌ Неверный ключ!');
-        }
-    }else{
-        document.getElementById('adminPanel').style.display = 'block';
-        closeSettings();
-    }
-}
-
-// Выход
 function logout(){
-    currentUser = null;
-    currentToken = null;
+    currentUser = null; currentToken = null; isAdmin = false;
     document.getElementById('loginOverlay').style.display = 'flex';
     document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('codeInput').value = '';
     document.getElementById('userStatus').textContent = 'Вы не вошли';
     document.getElementById('userStatus').style.background = 'rgba(255,68,68,0.2)';
+    document.getElementById('loginBox').innerHTML = '<h2>⚡ QuickChat</h2><p style="color:#ccc;font-size:12px">Введи код или войди как гость</p><input type="text" id="codeInput" placeholder="Код"><button onclick="login()">✅ Войти</button><button class="guest-btn" onclick="guestLogin()">👻 Войти как гость</button><div class="error" id="loginError" style="color:#ff4444;font-size:11px;display:none;margin-top:5px">❌ Неверный код!</div>';
 }
 </script>
+</body>
+</html>
