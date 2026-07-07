@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍅 TomatiK Clicker</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#1a1a2e;font-family:Arial;height:100vh;display:flex;justify-content:center;align-items:center;overflow:hidden;user-select:none}
+        .game{text-align:center;color:white}
+        h1{font-size:28px;margin-bottom:10px;color:#ff4444}
+        .score{font-size:60px;font-weight:bold;margin:20px 0;color:#ff8800}
+        .cps{font-size:18px;color:#888;margin-bottom:10px}
+        .tomato{font-size:120px;cursor:pointer;display:inline-block;animation:pulse 0.1s ease;transition:transform 0.05s}
+        .tomato:active{transform:scale(0.85)}
+        @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+        .record{font-size:16px;color:#aaa;margin-top:20px}
+        .timer{font-size:24px;color:white;margin-top:10px}
+        .btn{padding:12px 30px;background:#ff4444;color:white;border:none;border-radius:20px;font-size:16px;cursor:pointer;margin:10px;font-weight:bold}
+        .combo{font-size:14px;color:#ff8800;height:20px;margin-top:5px}
+    </style>
+</head>
+<body>
+<div class="game">
+    <h1>🍅 TomatiK Clicker</h1>
+    <div class="timer" id="timer">10.00</div>
+    <div class="score" id="score">0</div>
+    <div class="cps" id="cps">0 кликов/сек</div>
+    <div class="combo" id="combo"></div>
+    <div class="tomato" id="tomato" onclick="clickTomato()">🍅</div>
+    <div class="record" id="record">Рекорд: 0</div>
+    <button class="btn" onclick="startGame()">🔄 Начать заново</button>
+</div>
+
+<script>
+let score = 0;
+let clicks = [];
+let gameTime = 10;
+let timerInterval;
+let gameActive = false;
+let record = localStorage.getItem('clickerRecord') || 0;
+
+document.getElementById('record').textContent = 'Рекорд: ' + record;
+
+function clickTomato() {
+    if (!gameActive) return;
+    score++;
+    let now = Date.now();
+    clicks.push(now);
+    clicks = clicks.filter(t => now - t < 10000);
+    
+    document.getElementById('score').textContent = score;
+    
+    let cps = (clicks.length / 10).toFixed(1);
+    document.getElementById('cps').textContent = cps + ' кликов/сек';
+    
+    // Комбо сообщения
+    if (score === 50) showCombo('🔥 50!');
+    if (score === 100) showCombo('⚡ 100!');
+    if (score === 150) showCombo('💀 150!');
+    if (score === 200) showCombo('👑 200!');
+    
+    // Анимация помидора
+    let tomato = document.getElementById('tomato');
+    tomato.style.transform = 'scale(' + (0.85 + Math.random() * 0.15) + ')';
+    setTimeout(() => tomato.style.transform = 'scale(1)', 50);
+}
+
+function showCombo(text) {
+    let combo = document.getElementById('combo');
+    combo.textContent = text;
+    setTimeout(() => combo.textContent = '', 1000);
+}
+
+function startGame() {
+    score = 0;
+    clicks = [];
+    gameTime = 10;
+    gameActive = true;
+    
+    document.getElementById('score').textContent = '0';
+    document.getElementById('cps').textContent = '0 кликов/сек';
+    document.getElementById('timer').textContent = '10.00';
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        gameTime -= 0.01;
+        if (gameTime <= 0) {
+            gameTime = 0;
+            gameActive = false;
+            clearInterval(timerInterval);
+            document.getElementById('timer').textContent = '0.00';
+            
+            if (score > record) {
+                record = score;
+                localStorage.setItem('clickerRecord', record);
+                document.getElementById('record').textContent = 'Рекорд: ' + record + ' 🏆 НОВЫЙ РЕКОРД!';
+            }
+        }
+        document.getElementById('timer').textContent = gameTime.toFixed(2);
+    }, 10);
+}
+
+startGame();
+</script>
+</body>
+      </html>
